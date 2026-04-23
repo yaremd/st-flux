@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect, memo } from 'react'
-import { motion } from 'framer-motion'
-import { ArrowUpRight, ArrowDownRight } from '@phosphor-icons/react'
+import Link from 'next/link'
+import { motion, AnimatePresence } from 'framer-motion'
+import { ArrowUpRight, ArrowDownRight, X, ArrowRight } from '@phosphor-icons/react'
 import ThemeToggle from '@/components/ThemeToggle'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -105,6 +106,7 @@ const ThemeCard = memo(function ThemeCard({ theme, index }: { theme: Theme; inde
                            'bg-rose-600 dark:bg-rose-500'
 
   return (
+    <Link href={`/themes?theme=${theme.id}`} className="block">
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
@@ -145,12 +147,13 @@ const ThemeCard = memo(function ThemeCard({ theme, index }: { theme: Theme; inde
         </div>
       </div>
     </motion.div>
+    </Link>
   )
 })
 
 // ─── Alert Row ────────────────────────────────────────────────────────────────
 
-function AlertRow({ alert, index }: { alert: AlertItem; index: number }) {
+function AlertRow({ alert, index, onSelect, isSelected }: { alert: AlertItem; index: number; onSelect: () => void; isSelected: boolean }) {
   const s = {
     critical: { bar: 'bg-rose-500',  badge: 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400',   label: 'CRITICAL' },
     warning:  { bar: 'bg-amber-500', badge: 'bg-amber-50 text-amber-600 dark:bg-amber-400/10 dark:text-amber-400', label: 'WARNING'  },
@@ -162,7 +165,8 @@ function AlertRow({ alert, index }: { alert: AlertItem; index: number }) {
       initial={{ opacity: 0, x: -6 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 0.55 + index * 0.065, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-      className={`flex items-stretch gap-4 rounded-lg border border-zinc-200 bg-white px-4 py-3 transition-colors duration-150 hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700 ${alert.ack ? 'opacity-40' : ''}`}
+      onClick={onSelect}
+      className={`flex cursor-pointer items-stretch gap-4 rounded-lg border bg-white px-4 py-3 transition-colors duration-150 dark:bg-zinc-900 ${isSelected ? 'border-zinc-400 dark:border-zinc-600' : 'border-zinc-200 hover:border-zinc-300 dark:border-zinc-800 dark:hover:border-zinc-700'} ${alert.ack ? 'opacity-40' : ''}`}
     >
       <div className={`w-0.5 flex-shrink-0 rounded-full ${s.bar}`} />
       <div className="min-w-0 flex-1">
@@ -311,7 +315,15 @@ const KPI_ITEMS = [
 
 // ─── Main Export ──────────────────────────────────────────────────────────────
 
+const SEVERITY_COLORS: Record<AlertSeverity, { bar: string; badge: string; label: string; bg: string }> = {
+  critical: { bar: 'bg-rose-500', badge: 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400', label: 'CRITICAL', bg: 'bg-rose-50 dark:bg-rose-500/5' },
+  warning:  { bar: 'bg-amber-500', badge: 'bg-amber-50 text-amber-600 dark:bg-amber-400/10 dark:text-amber-400', label: 'WARNING', bg: 'bg-amber-50 dark:bg-amber-500/5' },
+  info:     { bar: 'bg-blue-500', badge: 'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400', label: 'INFO', bg: 'bg-blue-50 dark:bg-blue-500/5' },
+}
+
 export default function OverviewClient() {
+  const [selectedAlert, setSelectedAlert] = useState<AlertItem | null>(null)
+
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
@@ -333,77 +345,174 @@ export default function OverviewClient() {
         </div>
       </motion.header>
 
-      {/* Scrollable body */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="space-y-5 p-6">
-          {/* KPI strip */}
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-            {KPI_ITEMS.map((kpi, i) => (
-              <motion.div
-                key={kpi.label}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.065, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                className={`rounded-lg border border-zinc-200 border-l-2 ${kpi.borderLeft} bg-white px-4 py-3.5 dark:border-zinc-800 dark:bg-zinc-900`}
-              >
-                <p className="text-[10px] font-medium uppercase tracking-widest text-zinc-400 dark:text-zinc-500">{kpi.label}</p>
-                <p className={`mt-2 font-mono text-[2rem] font-semibold leading-none tracking-tight ${kpi.valueColor}`}>{kpi.value}</p>
-                <p className="mt-1.5 text-[11px] text-zinc-400 dark:text-zinc-600">{kpi.sub}</p>
-              </motion.div>
-            ))}
-          </div>
+      {/* Body: main scroll + alert detail panel */}
+      <div className="flex min-h-0 flex-1">
+        {/* Scrollable main content */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="space-y-5 p-6">
+            {/* KPI strip */}
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+              {KPI_ITEMS.map((kpi, i) => (
+                <motion.div
+                  key={kpi.label}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.065, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                  className={`rounded-lg border border-zinc-200 border-l-2 ${kpi.borderLeft} bg-white px-4 py-3.5 dark:border-zinc-800 dark:bg-zinc-900`}
+                >
+                  <p className="text-[10px] font-medium uppercase tracking-widest text-zinc-400 dark:text-zinc-500">{kpi.label}</p>
+                  <p className={`mt-2 font-mono text-[2rem] font-semibold leading-none tracking-tight ${kpi.valueColor}`}>{kpi.value}</p>
+                  <p className="mt-1.5 text-[11px] text-zinc-400 dark:text-zinc-600">{kpi.sub}</p>
+                </motion.div>
+              ))}
+            </div>
 
-          {/* Content: Morning Brief + Theme Health */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-[2fr_3fr]" style={{ minHeight: '440px' }}>
-            <MorningBrief />
+            {/* Content: Morning Brief + Theme Health */}
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-[2fr_3fr]" style={{ minHeight: '440px' }}>
+              <MorningBrief />
 
-            <div className="flex flex-col gap-2.5">
+              <div className="flex flex-col gap-2.5">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.18, duration: 0.3 }}
+                  className="flex items-center justify-between"
+                >
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
+                    Theme Health
+                  </p>
+                  <p className="font-mono text-[10px] text-zinc-300 dark:text-zinc-700">
+                    4 healthy · 2 warning · 0 critical
+                  </p>
+                </motion.div>
+
+                <div className="grid flex-1 grid-cols-1 gap-2.5 sm:grid-cols-2">
+                  {THEMES.map((theme, i) => (
+                    <ThemeCard key={theme.id} theme={theme} index={i} />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Alert feed */}
+            <div className="space-y-2">
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.18, duration: 0.3 }}
+                transition={{ delay: 0.5, duration: 0.25 }}
                 className="flex items-center justify-between"
               >
                 <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
-                  Theme Health
+                  Recent Alerts
                 </p>
-                <p className="font-mono text-[10px] text-zinc-300 dark:text-zinc-700">
-                  4 healthy · 2 warning · 0 critical
-                </p>
+                <Link href="/alerts" className="font-mono text-[10px] text-blue-600 transition-colors hover:text-blue-500 dark:text-blue-500 dark:hover:text-blue-400">
+                  View all →
+                </Link>
               </motion.div>
 
-              <div className="grid flex-1 grid-cols-1 gap-2.5 sm:grid-cols-2">
-                {THEMES.map((theme, i) => (
-                  <ThemeCard key={theme.id} theme={theme} index={i} />
+              <div className="space-y-2">
+                {RECENT_ALERTS.map((alert, i) => (
+                  <AlertRow
+                    key={alert.id}
+                    alert={alert}
+                    index={i}
+                    isSelected={selectedAlert?.id === alert.id}
+                    onSelect={() => setSelectedAlert(prev => prev?.id === alert.id ? null : alert)}
+                  />
                 ))}
               </div>
             </div>
+
+            <div className="h-4" />
           </div>
+        </div>
 
-          {/* Alert feed */}
-          <div className="space-y-2">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5, duration: 0.25 }}
-              className="flex items-center justify-between"
-            >
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
-                Recent Alerts
-              </p>
-              <a href="/alerts" className="font-mono text-[10px] text-blue-600 transition-colors hover:text-blue-500 dark:text-blue-500 dark:hover:text-blue-400">
-                View all →
-              </a>
-            </motion.div>
+        {/* ── Alert detail side panel ── */}
+        <div
+          style={{ width: selectedAlert ? 360 : 0 }}
+          className="flex-shrink-0 overflow-hidden border-l border-zinc-200 bg-white transition-[width] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] dark:border-zinc-800 dark:bg-zinc-950"
+        >
+          <div style={{ width: 360 }}>
+            <AnimatePresence mode="wait">
+              {selectedAlert && (
+                <motion.div
+                  key={selectedAlert.id}
+                  initial={{ opacity: 0, x: 12 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 12 }}
+                  transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                  className="flex h-full flex-col"
+                >
+                  {/* Panel header */}
+                  <div className="flex h-14 flex-shrink-0 items-center justify-between border-b border-zinc-200 px-5 dark:border-zinc-800">
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
+                      Alert Detail
+                    </span>
+                    <button
+                      onClick={() => setSelectedAlert(null)}
+                      className="flex h-7 w-7 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+                    >
+                      <X size={14} weight="bold" />
+                    </button>
+                  </div>
 
-            <div className="space-y-2">
-              {RECENT_ALERTS.map((alert, i) => (
-                <AlertRow key={alert.id} alert={alert} index={i} />
-              ))}
-            </div>
+                  {/* Severity strip */}
+                  <div className={`flex-shrink-0 border-b border-zinc-200 px-5 py-4 dark:border-zinc-800 ${SEVERITY_COLORS[selectedAlert.severity].bg}`}>
+                    <div className="mb-2 flex items-center gap-2">
+                      <span className={`rounded px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-widest ${SEVERITY_COLORS[selectedAlert.severity].badge}`}>
+                        {SEVERITY_COLORS[selectedAlert.severity].label}
+                      </span>
+                      <span className="text-[11px] text-zinc-500 dark:text-zinc-400">{selectedAlert.theme}</span>
+                    </div>
+                    <p className="font-mono text-xs text-zinc-400 dark:text-zinc-600">{selectedAlert.time} UTC</p>
+                  </div>
+
+                  {/* Message body */}
+                  <div className="flex-1 overflow-y-auto px-5 py-5">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-600 mb-2">
+                      Message
+                    </p>
+                    <p className="text-sm leading-relaxed text-zinc-800 dark:text-zinc-200">
+                      {selectedAlert.message}
+                    </p>
+
+                    {selectedAlert.ack && (
+                      <div className="mt-4 flex items-center gap-1.5">
+                        <span className="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-widest text-zinc-400 dark:bg-zinc-800 dark:text-zinc-600">
+                          Acknowledged
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="mt-6 border-t border-zinc-100 pt-5 dark:border-zinc-800">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-600 mb-3">
+                        Related Theme
+                      </p>
+                      <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                        {selectedAlert.theme}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Footer actions */}
+                  <div className="flex flex-shrink-0 items-center justify-between border-t border-zinc-200 px-5 py-4 dark:border-zinc-800">
+                    <Link
+                      href="/alerts"
+                      className="flex items-center gap-1.5 font-mono text-[11px] text-blue-600 transition-colors hover:text-blue-500 dark:text-blue-500 dark:hover:text-blue-400"
+                    >
+                      View all alerts
+                      <ArrowRight size={11} weight="bold" />
+                    </Link>
+                    {!selectedAlert.ack && (
+                      <button className="rounded-md bg-zinc-900 px-3 py-1.5 font-mono text-[10px] font-semibold uppercase tracking-wider text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300">
+                        Acknowledge
+                      </button>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-
-          <div className="h-4" />
         </div>
       </div>
     </div>

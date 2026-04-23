@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo, memo, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   CheckCircle,
@@ -740,7 +741,15 @@ function ThemeDetail({ theme, color }: { theme: Theme; color: string }) {
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function ThemesClient() {
+  const searchParams = useSearchParams()
   const [selectedId, setSelectedId] = useState(THEMES[0].id)
+
+  useEffect(() => {
+    const param = searchParams.get('theme')
+    if (param && THEMES.find((t) => t.id === param)) {
+      setSelectedId(param)
+    }
+  }, [searchParams])
 
   const selectedTheme = useMemo(
     () => THEMES.find((t) => t.id === selectedId)!,
