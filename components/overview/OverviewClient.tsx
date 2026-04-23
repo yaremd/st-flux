@@ -3,7 +3,7 @@
 import { useState, useEffect, memo } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowUpRight, ArrowDownRight, X, ArrowRight } from '@phosphor-icons/react'
+import { ArrowUpRight, ArrowDownRight, X, ArrowRight, SquaresFour } from '@phosphor-icons/react'
 import ThemeToggle from '@/components/ThemeToggle'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -134,7 +134,7 @@ const ThemeCard = memo(function ThemeCard({ theme, index }: { theme: Theme; inde
 
       <div className="mt-3 border-t border-zinc-100 pt-3 dark:border-zinc-800/60">
         <div className="mb-1.5 flex items-center justify-between">
-          <span className="text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-600">Coverage</span>
+          <span className="text-[10px] tracking-wide text-zinc-400 dark:text-zinc-600">Coverage</span>
           <span className={`font-mono text-[10px] font-medium ${TEXT_COLORS[theme.status]}`}>{theme.coverage}%</span>
         </div>
         <div className="h-[3px] overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
@@ -171,12 +171,12 @@ function AlertRow({ alert, index, onSelect, isSelected }: { alert: AlertItem; in
       <div className={`w-0.5 flex-shrink-0 rounded-full ${s.bar}`} />
       <div className="min-w-0 flex-1">
         <div className="mb-1 flex flex-wrap items-center gap-2">
-          <span className={`rounded px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-widest ${s.badge}`}>
+          <span className={`rounded px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-wide ${s.badge}`}>
             {s.label}
           </span>
           <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{alert.theme}</span>
           {alert.ack && (
-            <span className="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-widest text-zinc-400 dark:bg-zinc-800 dark:text-zinc-600">
+            <span className="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wide text-zinc-400 dark:bg-zinc-800 dark:text-zinc-600">
               ACK
             </span>
           )}
@@ -192,15 +192,13 @@ function AlertRow({ alert, index, onSelect, isSelected }: { alert: AlertItem; in
 
 const SystemStatusPill = memo(function SystemStatusPill() {
   return (
-    <div className="flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-50 px-3 py-1.5 dark:border-emerald-500/20 dark:bg-emerald-500/10">
-      <span className="relative flex h-2 w-2">
-        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-50 dark:bg-emerald-400" />
-        <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500 dark:bg-emerald-400" />
+    <span className="flex items-center gap-1.5 rounded px-1.5 py-0.5 bg-emerald-500/10 dark:bg-emerald-500/15">
+      <span className="relative flex h-1.5 w-1.5">
+        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60" />
+        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
       </span>
-      <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-emerald-700 dark:text-emerald-400">
-        Systems Nominal
-      </span>
-    </div>
+      <span className="font-mono text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">nominal</span>
+    </span>
   )
 })
 
@@ -247,7 +245,7 @@ function MorningBrief() {
     >
       <div className="flex flex-shrink-0 items-center justify-between border-b border-zinc-200 px-5 py-3.5 dark:border-zinc-800">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">Morning Brief</p>
+          <p className="text-[10px] font-semibold tracking-wide text-zinc-500 dark:text-zinc-400">Morning brief</p>
           <p className="mt-0.5 font-mono text-[11px] text-zinc-400 dark:text-zinc-600">Thu 23 Apr 2026 · 04:51 UTC</p>
         </div>
         <span className="rounded-md bg-zinc-100 px-2 py-1 font-mono text-[9px] uppercase tracking-wider text-zinc-400 dark:bg-zinc-800 dark:text-zinc-600">
@@ -256,7 +254,7 @@ function MorningBrief() {
       </div>
 
       <div className="flex-shrink-0 border-b border-zinc-200 bg-blue-50 px-5 py-3.5 dark:border-zinc-800 dark:bg-blue-500/5">
-        <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-blue-600 dark:text-blue-500">
+        <p className="mb-2 text-[10px] font-semibold tracking-wide text-blue-600 dark:text-blue-500">
           Action required before 09:00 ET
         </p>
         <ul className="space-y-1.5">
@@ -296,7 +294,7 @@ function MorningBrief() {
         ].map(({ label, value, color }) => (
           <div key={label} className="flex flex-col items-center gap-0.5 py-3">
             <span className={`font-mono text-base font-semibold leading-none ${color}`}>{value}</span>
-            <span className="text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-600">{label}</span>
+            <span className="text-[10px] tracking-wide text-zinc-400 dark:text-zinc-600">{label}</span>
           </div>
         ))}
       </div>
@@ -327,23 +325,18 @@ export default function OverviewClient() {
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <motion.header
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.25 }}
-        className="flex h-14 flex-shrink-0 items-center justify-between border-b border-zinc-200 px-6 dark:border-zinc-800"
-      >
-        <div className="flex items-center gap-4">
-          <h1 className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Overview</h1>
-          <span className="text-zinc-300 dark:text-zinc-700">/</span>
-          <p className="text-xs text-zinc-400 dark:text-zinc-600">Thu 23 Apr 2026</p>
+      <div className="flex h-14 flex-shrink-0 items-center justify-between border-b border-zinc-200 px-5 dark:border-zinc-800">
+        <div className="flex items-center gap-3">
+          <SquaresFour size={15} weight="fill" className="text-zinc-400 dark:text-zinc-500" />
+          <h1 className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">Overview</h1>
+          <span className="font-mono text-[11px] text-zinc-400 dark:text-zinc-600">Thu 23 Apr 2026</span>
+          <SystemStatusPill />
         </div>
         <div className="flex items-center gap-3">
           <LiveClock />
-          <SystemStatusPill />
           <ThemeToggle />
         </div>
-      </motion.header>
+      </div>
 
       {/* Body: main scroll + alert detail panel */}
       <div className="flex min-h-0 flex-1">
@@ -360,7 +353,7 @@ export default function OverviewClient() {
                   transition={{ delay: i * 0.065, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                   className={`rounded-lg border border-zinc-200 border-l-2 ${kpi.borderLeft} bg-white px-4 py-3.5 dark:border-zinc-800 dark:bg-zinc-900`}
                 >
-                  <p className="text-[10px] font-medium uppercase tracking-widest text-zinc-400 dark:text-zinc-500">{kpi.label}</p>
+                  <p className="text-[10px] font-semibold tracking-wide text-zinc-500 dark:text-zinc-400">{kpi.label}</p>
                   <p className={`mt-2 font-mono text-[2rem] font-semibold leading-none tracking-tight ${kpi.valueColor}`}>{kpi.value}</p>
                   <p className="mt-1.5 text-[11px] text-zinc-400 dark:text-zinc-600">{kpi.sub}</p>
                 </motion.div>
@@ -378,8 +371,8 @@ export default function OverviewClient() {
                   transition={{ delay: 0.18, duration: 0.3 }}
                   className="flex items-center justify-between"
                 >
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
-                    Theme Health
+                  <p className="text-[10px] font-semibold tracking-wide text-zinc-500 dark:text-zinc-400">
+                    Theme health
                   </p>
                   <p className="font-mono text-[10px] text-zinc-300 dark:text-zinc-700">
                     4 healthy · 2 warning · 0 critical
@@ -402,8 +395,8 @@ export default function OverviewClient() {
                 transition={{ delay: 0.5, duration: 0.25 }}
                 className="flex items-center justify-between"
               >
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
-                  Recent Alerts
+                <p className="text-[10px] font-semibold tracking-wide text-zinc-500 dark:text-zinc-400">
+                  Recent alerts
                 </p>
                 <Link href="/alerts" className="font-mono text-[10px] text-blue-600 transition-colors hover:text-blue-500 dark:text-blue-500 dark:hover:text-blue-400">
                   View all →
@@ -445,7 +438,7 @@ export default function OverviewClient() {
                 >
                   {/* Panel header */}
                   <div className="flex h-14 flex-shrink-0 items-center justify-between border-b border-zinc-200 px-5 dark:border-zinc-800">
-                    <span className="text-[10px] font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
+                    <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-400 dark:text-zinc-500">
                       Alert Detail
                     </span>
                     <button
@@ -459,7 +452,7 @@ export default function OverviewClient() {
                   {/* Severity strip */}
                   <div className={`flex-shrink-0 border-b border-zinc-200 px-5 py-4 dark:border-zinc-800 ${SEVERITY_COLORS[selectedAlert.severity].bg}`}>
                     <div className="mb-2 flex items-center gap-2">
-                      <span className={`rounded px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-widest ${SEVERITY_COLORS[selectedAlert.severity].badge}`}>
+                      <span className={`rounded px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-wide ${SEVERITY_COLORS[selectedAlert.severity].badge}`}>
                         {SEVERITY_COLORS[selectedAlert.severity].label}
                       </span>
                       <span className="text-[11px] text-zinc-500 dark:text-zinc-400">{selectedAlert.theme}</span>
@@ -478,7 +471,7 @@ export default function OverviewClient() {
 
                     {selectedAlert.ack && (
                       <div className="mt-4 flex items-center gap-1.5">
-                        <span className="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-widest text-zinc-400 dark:bg-zinc-800 dark:text-zinc-600">
+                        <span className="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wide text-zinc-400 dark:bg-zinc-800 dark:text-zinc-600">
                           Acknowledged
                         </span>
                       </div>

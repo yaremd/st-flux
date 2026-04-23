@@ -340,10 +340,10 @@ const THEMES: Theme[] = [
 // ─── Style maps ───────────────────────────────────────────────────────────────
 
 const STATUS_STYLES: Record<ConvictionStatus, { badge: string; label: string }> = {
-  strong: { badge: 'bg-emerald-500/15 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400', label: 'STRONG' },
-  moderate: { badge: 'bg-blue-500/15 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400', label: 'MODERATE' },
-  watch: { badge: 'bg-amber-500/15 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400', label: 'WATCH' },
-  review: { badge: 'bg-rose-500/15 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400', label: 'REVIEW' },
+  strong: { badge: 'bg-emerald-500/15 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400', label: 'strong' },
+  moderate: { badge: 'bg-blue-500/15 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400', label: 'moderate' },
+  watch: { badge: 'bg-amber-500/15 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400', label: 'watch' },
+  review: { badge: 'bg-rose-500/15 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400', label: 'review' },
 }
 
 const SIGNAL_DOT: Record<SignalType, string> = {
@@ -469,7 +469,7 @@ const HoldingsSection = memo(function HoldingsSection({
   return (
     <div className="border-b border-zinc-200 dark:border-zinc-800">
       <div className="flex items-center justify-between px-6 py-2.5 border-b border-zinc-100 dark:border-zinc-800/60">
-        <p className="text-[11px] font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-600">
+        <p className="text-[10px] font-semibold tracking-wide text-zinc-500 dark:text-zinc-400">
           Holdings
         </p>
         <p className="font-mono text-[10px] text-zinc-400 dark:text-zinc-600">
@@ -478,11 +478,11 @@ const HoldingsSection = memo(function HoldingsSection({
       </div>
       {/* Column headers */}
       <div className="flex items-center gap-4 px-6 py-1.5 border-b border-zinc-100 dark:border-zinc-800/40">
-        <div className="w-14 font-mono text-[10px] text-zinc-400 uppercase tracking-wider">Ticker</div>
-        <div className="flex-1 font-mono text-[10px] text-zinc-400 uppercase tracking-wider">Name</div>
-        <div className="w-40 font-mono text-[10px] text-zinc-400 uppercase tracking-wider">Weight</div>
-        <div className="w-16 text-right font-mono text-[10px] text-zinc-400 uppercase tracking-wider">30d</div>
-        <div className="w-16 text-right font-mono text-[10px] text-zinc-400 uppercase tracking-wider">Contrib</div>
+        <div className="w-14 font-mono text-[10px] text-zinc-400 tracking-wide">Ticker</div>
+        <div className="flex-1 font-mono text-[10px] text-zinc-400 tracking-wide">Name</div>
+        <div className="w-40 font-mono text-[10px] text-zinc-400 tracking-wide">Weight</div>
+        <div className="w-16 text-right font-mono text-[10px] text-zinc-400 tracking-wide">30d</div>
+        <div className="w-16 text-right font-mono text-[10px] text-zinc-400 tracking-wide">Contrib</div>
       </div>
       <motion.div
         variants={container}
@@ -560,7 +560,7 @@ function ThemeDetail({ theme, color }: { theme: Theme; color: string }) {
       <div className="grid grid-cols-[5fr_4fr] border-b border-zinc-200 dark:border-zinc-800">
         {/* Conviction score */}
         <div className="px-6 py-5 border-r border-zinc-200 dark:border-zinc-800">
-          <p className="text-[11px] font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-600 mb-3">
+          <p className="text-[10px] font-semibold tracking-wide text-zinc-500 dark:text-zinc-400 mb-3">
             Conviction Score
           </p>
           <div className="flex items-end gap-3 mb-4">
@@ -602,7 +602,7 @@ function ThemeDetail({ theme, color }: { theme: Theme; color: string }) {
         {/* Conviction chart */}
         <div className="px-6 py-5">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-[11px] font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-600">
+            <p className="text-[10px] font-semibold tracking-wide text-zinc-500 dark:text-zinc-400">
               30-Day History
             </p>
             <div className="flex items-center gap-3 font-mono text-[10px] text-zinc-400 dark:text-zinc-600">
@@ -616,7 +616,7 @@ function ThemeDetail({ theme, color }: { theme: Theme; color: string }) {
 
       {/* ── Section 2: Thesis + Assumptions ── */}
       <div className="px-6 py-5 border-b border-zinc-200 dark:border-zinc-800">
-        <p className="text-[11px] font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-600 mb-2">
+        <p className="text-[10px] font-semibold tracking-wide text-zinc-500 dark:text-zinc-400 mb-2">
           Investment Thesis
         </p>
         <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed mb-4 max-w-3xl">
@@ -654,7 +654,7 @@ function ThemeDetail({ theme, color }: { theme: Theme; color: string }) {
       <div className="grid grid-cols-[3fr_2fr] border-b border-zinc-200 dark:border-zinc-800">
         {/* Signal feed */}
         <div className="px-6 py-5 border-r border-zinc-200 dark:border-zinc-800">
-          <p className="text-[11px] font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-600 mb-4">
+          <p className="text-[10px] font-semibold tracking-wide text-zinc-500 dark:text-zinc-400 mb-4">
             Recent Signals
           </p>
           <div className="relative pl-5 space-y-4">
@@ -676,7 +676,7 @@ function ThemeDetail({ theme, color }: { theme: Theme; color: string }) {
 
         {/* Catalyst board */}
         <div className="px-6 py-5">
-          <p className="text-[11px] font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-600 mb-4">
+          <p className="text-[10px] font-semibold tracking-wide text-zinc-500 dark:text-zinc-400 mb-4">
             Upcoming Catalysts
           </p>
           <div className="space-y-4">
@@ -691,7 +691,7 @@ function ThemeDetail({ theme, color }: { theme: Theme; color: string }) {
                 <div className="flex-1 min-w-0 pt-0.5">
                   <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-snug mb-1.5">{c.event}</p>
                   <span
-                    className={`font-mono text-[10px] font-semibold uppercase tracking-wider rounded px-1.5 py-0.5 ${IMPACT_BADGE[c.impact]}`}
+                    className={`font-mono text-[10px] font-semibold tracking-wide rounded px-1.5 py-0.5 ${IMPACT_BADGE[c.impact]}`}
                   >
                     {c.impact} impact
                   </span>
@@ -704,7 +704,7 @@ function ThemeDetail({ theme, color }: { theme: Theme; color: string }) {
 
       {/* ── Section 5: Risk factors ── */}
       <div className="px-6 py-5">
-        <p className="text-[11px] font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-600 mb-4">
+        <p className="text-[10px] font-semibold tracking-wide text-zinc-500 dark:text-zinc-400 mb-4">
           Risk Factors
         </p>
         <div className="grid grid-cols-2 gap-3">
@@ -762,8 +762,8 @@ export default function ThemesClient() {
       {/* ── Left: Theme selector ── */}
       <div className="w-52 flex-shrink-0 flex flex-col border-r border-zinc-200 dark:border-zinc-800 overflow-y-auto">
         <div className="flex h-14 items-center px-5 border-b border-zinc-200 dark:border-zinc-800">
-          <p className="font-mono text-[10px] font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-600">
-            6 Themes
+          <p className="text-[10px] font-semibold tracking-wide text-zinc-500 dark:text-zinc-400">
+            6 themes
           </p>
         </div>
         {THEMES.map((t) => {
@@ -812,7 +812,7 @@ export default function ThemesClient() {
       {/* ── Right: Detail panel ── */}
       <div className="flex flex-1 flex-col min-w-0">
         {/* Header */}
-        <div className="flex h-14 flex-shrink-0 items-center justify-between border-b border-zinc-200 dark:border-zinc-800 px-6">
+        <div className="flex h-14 flex-shrink-0 items-center justify-between border-b border-zinc-200 dark:border-zinc-800 px-5">
           <div className="flex items-center gap-3">
             <span
               className="h-2.5 w-2.5 rounded-full flex-shrink-0"
@@ -822,7 +822,7 @@ export default function ThemesClient() {
               {selectedTheme.name}
             </h1>
             <span
-              className={`font-mono text-[10px] font-semibold uppercase tracking-wider rounded px-1.5 py-0.5 ${STATUS_STYLES[selectedTheme.status].badge}`}
+              className={`font-mono text-[10px] font-semibold tracking-wide rounded px-1.5 py-0.5 ${STATUS_STYLES[selectedTheme.status].badge}`}
             >
               {STATUS_STYLES[selectedTheme.status].label}
             </span>

@@ -5,6 +5,42 @@ import { motion } from 'framer-motion'
 import { Database } from '@phosphor-icons/react'
 import ThemeToggle from '@/components/ThemeToggle'
 
+// ─── Health Gauge ─────────────────────────────────────────────────────────────
+
+function HealthGauge({ pct }: { pct: number }) {
+  const r = 15
+  const circ = 2 * Math.PI * r
+  const half = circ / 2
+  const fill = (pct / 100) * half
+  const color = pct >= 85 ? '#10b981' : pct >= 70 ? '#f59e0b' : '#f43f5e'
+
+  return (
+    <svg width="42" height="24" viewBox="0 0 42 24" aria-label={`System health ${pct}%`}>
+      <circle
+        cx="21" cy="21" r={r}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeDasharray={`${half} ${circ}`}
+        strokeLinecap="round"
+        className="text-zinc-200 dark:text-zinc-800"
+        style={{ transform: 'rotate(-90deg)', transformOrigin: '21px 21px' }}
+      />
+      <motion.circle
+        cx="21" cy="21" r={r}
+        fill="none"
+        stroke={color}
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        style={{ transform: 'rotate(-90deg)', transformOrigin: '21px 21px' }}
+        initial={{ strokeDasharray: `0 ${circ}` }}
+        animate={{ strokeDasharray: `${fill} ${circ}` }}
+        transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+      />
+    </svg>
+  )
+}
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type FeedStatus = 'healthy' | 'degraded' | 'failed' | 'idle'
@@ -396,8 +432,9 @@ function LiveClock() {
 function SectionHeader({ label, count, extra }: { label: string; count?: number; extra?: ReactNode }) {
   return (
     <div className="sticky top-0 z-10 flex items-center justify-between gap-2 px-4 py-2 bg-zinc-50/95 dark:bg-zinc-900/95 backdrop-blur-sm border-b border-zinc-100 dark:border-zinc-800">
-      <div className="flex items-center gap-2">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-600">
+      <div className="flex items-center gap-2.5">
+        <span className="block h-3 w-px rounded-full bg-zinc-400 dark:bg-zinc-500" />
+        <span className="text-[10px] font-semibold tracking-wide text-zinc-500 dark:text-zinc-400">
           {label}
         </span>
         {count !== undefined && (
@@ -425,11 +462,18 @@ export default function PipelineClient() {
       {/* ── Header ── */}
       <div className="flex h-14 flex-shrink-0 items-center justify-between border-b border-zinc-200 dark:border-zinc-800 px-5">
         <div className="flex items-center gap-3">
-          <Database size={16} weight="fill" className="text-zinc-500 dark:text-zinc-400" />
-          <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Pipeline Health</h1>
+          <Database size={15} weight="fill" className="text-zinc-400 dark:text-zinc-500" />
+          <h1 className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">Pipeline health</h1>
+          <span className="flex items-center gap-1 rounded px-1.5 py-0.5 bg-emerald-500/10 dark:bg-emerald-500/15">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            </span>
+            <span className="font-mono text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">LIVE</span>
+          </span>
           {activeInc > 0 && (
-            <span className="flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-rose-500/15 px-1.5 font-mono text-[10px] font-semibold text-rose-600 dark:bg-rose-500/20 dark:text-rose-400">
-              {activeInc}
+            <span className="flex h-5 min-w-[1.25rem] items-center justify-center rounded bg-rose-500/15 px-1.5 font-mono text-[10px] font-semibold text-rose-600 dark:bg-rose-500/20 dark:text-rose-400">
+              {activeInc} incident{activeInc > 1 ? 's' : ''}
             </span>
           )}
         </div>
@@ -440,45 +484,54 @@ export default function PipelineClient() {
       </div>
 
       {/* ── Stat strip ── */}
-      <div className="flex flex-shrink-0 flex-wrap items-center gap-x-6 gap-y-1 border-b border-zinc-200 dark:border-zinc-800 px-5 py-2.5 bg-zinc-50 dark:bg-zinc-900/50">
-        <div className="flex items-center gap-2">
-          <span className="font-mono text-xl font-bold text-emerald-600 dark:text-emerald-400">83%</span>
-          <span className="text-[11px] text-zinc-500">system health</span>
+      <div className="flex flex-shrink-0 divide-x divide-zinc-200 dark:divide-zinc-800 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50">
+        {/* System health */}
+        <div className="flex items-center gap-3 px-5 py-3">
+          <HealthGauge pct={83} />
+          <div>
+            <span className="block font-mono text-xl font-bold leading-none text-zinc-900 dark:text-zinc-100">83%</span>
+            <span className="mt-1 block text-[10px] text-zinc-500">system health</span>
+          </div>
         </div>
-        <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-800" />
-        <div className="flex items-center gap-3 font-mono text-[11px] text-zinc-500">
-          <span className="flex items-center gap-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-            {healthyFeeds} healthy
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-            {degradedFeeds} degraded
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
-            {failedFeeds} failed
-          </span>
+        {/* Feed status */}
+        <div className="flex flex-col justify-center gap-1 px-5 py-3">
+          <span className="text-[10px] text-zinc-400 dark:text-zinc-600 mb-0.5">Feeds</span>
+          <div className="flex items-center gap-3 font-mono text-[11px]">
+            <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />{healthyFeeds} ok
+            </span>
+            <span className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />{degradedFeeds} deg
+            </span>
+            <span className="flex items-center gap-1.5 text-rose-600 dark:text-rose-400">
+              <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />{failedFeeds} fail
+            </span>
+          </div>
         </div>
-        <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-800" />
-        <div className="flex items-center gap-2 font-mono text-[11px] text-zinc-500">
-          <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
-          <span>{activeJobs} jobs active</span>
-          {degradedJobs > 0 && (
-            <>
-              <span className="text-zinc-300 dark:text-zinc-700">/</span>
-              <span className="text-amber-600 dark:text-amber-400">{degradedJobs} degraded</span>
-            </>
-          )}
+        {/* Jobs status */}
+        <div className="flex flex-col justify-center gap-1 px-5 py-3">
+          <span className="text-[10px] text-zinc-400 dark:text-zinc-600 mb-0.5">Jobs</span>
+          <div className="flex items-center gap-3 font-mono text-[11px]">
+            <span className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400">
+              <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />{activeJobs} active
+            </span>
+            {degradedJobs > 0 && (
+              <span className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />{degradedJobs} slow
+              </span>
+            )}
+          </div>
         </div>
-        <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-800" />
-        <span className="font-mono text-[11px] text-zinc-500">
-          <span className="font-semibold text-zinc-700 dark:text-zinc-300">4,550</span> rec/h
-        </span>
-        <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-800" />
-        <span className="font-mono text-[11px] text-zinc-500">
-          last full sync <span className="text-zinc-700 dark:text-zinc-300">4 min ago</span>
-        </span>
+        {/* Throughput */}
+        <div className="flex flex-col justify-center px-5 py-3">
+          <span className="text-[10px] text-zinc-400 dark:text-zinc-600 mb-1">Throughput</span>
+          <span className="font-mono text-sm font-semibold text-zinc-800 dark:text-zinc-200">4,550<span className="ml-1 text-[10px] font-normal text-zinc-400 dark:text-zinc-600">rec/h</span></span>
+        </div>
+        {/* Last sync */}
+        <div className="flex flex-col justify-center px-5 py-3">
+          <span className="text-[10px] text-zinc-400 dark:text-zinc-600 mb-1">Last sync</span>
+          <span className="font-mono text-sm font-semibold text-zinc-800 dark:text-zinc-200">4 min<span className="ml-1 text-[10px] font-normal text-zinc-400 dark:text-zinc-600">ago</span></span>
+        </div>
       </div>
 
       {/* ── Body ── */}
@@ -489,7 +542,7 @@ export default function PipelineClient() {
 
           {/* DATA FEEDS */}
           <SectionHeader
-            label="Data Feeds"
+            label="Data feeds"
             count={DATA_FEEDS.length}
             extra={
               <div className="flex items-center gap-0 font-mono text-[10px] text-zinc-400 dark:text-zinc-600">
@@ -503,7 +556,7 @@ export default function PipelineClient() {
           />
           <div className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
             {DATA_FEEDS.map((feed) => (
-              <div key={feed.id} className="flex items-center gap-3 px-4 py-2.5">
+              <div key={feed.id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-zinc-50/80 dark:hover:bg-white/[0.025] transition-colors duration-100 cursor-default">
                 <StatusDot status={feed.status} />
                 {/* Name + category */}
                 <div className="flex-1 min-w-0">
@@ -565,7 +618,7 @@ export default function PipelineClient() {
 
           {/* PIPELINE JOBS */}
           <SectionHeader
-            label="Pipeline Jobs"
+            label="Pipeline jobs"
             count={PIPELINE_JOBS.length}
             extra={
               <div className="flex items-center gap-0 font-mono text-[10px] text-zinc-400 dark:text-zinc-600">
@@ -578,7 +631,7 @@ export default function PipelineClient() {
           />
           <div className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
             {PIPELINE_JOBS.map((job) => (
-              <div key={job.id} className="flex items-center gap-3 px-4 py-2.5">
+              <div key={job.id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-zinc-50/80 dark:hover:bg-white/[0.025] transition-colors duration-100 cursor-default">
                 <StatusDot status={job.status} />
                 <div className="flex-1 min-w-0 flex items-center gap-2">
                   <p className="text-xs font-medium text-zinc-800 dark:text-zinc-200 truncate">
@@ -625,34 +678,41 @@ export default function PipelineClient() {
         <div className="overflow-y-auto">
 
           {/* INCIDENTS */}
-          <SectionHeader label="Incidents" count={INCIDENTS.length} />
+          <SectionHeader label="Active incidents" count={INCIDENTS.length} />
           <div className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
             {INCIDENTS.map((inc) => (
               <div
                 key={inc.id}
                 className={[
-                  'px-4 py-3 border-l-[3px] transition-opacity',
-                  inc.resolved
-                    ? 'border-zinc-200 dark:border-zinc-700 opacity-55'
-                    : inc.severity === 'critical'
-                    ? 'border-rose-500 bg-rose-500/5 dark:bg-rose-500/5'
-                    : 'border-amber-500 bg-amber-500/5 dark:bg-amber-500/5',
+                  'relative px-4 py-3 pl-5 transition-opacity',
+                  inc.resolved ? 'opacity-45' : '',
                 ].join(' ')}
               >
+                {/* Left accent bar */}
+                <span className={[
+                  'absolute left-0 top-0 bottom-0 w-[3px] rounded-r-full',
+                  inc.resolved
+                    ? 'bg-zinc-300 dark:bg-zinc-700'
+                    : inc.severity === 'critical'
+                    ? 'bg-rose-500'
+                    : 'bg-amber-500',
+                  !inc.resolved && inc.severity === 'critical' ? 'animate-pulse' : '',
+                ].join(' ')} />
+
                 <div className="flex items-start justify-between gap-2 mb-1">
-                  <p className={`text-xs font-semibold leading-snug ${
+                  <p className={`text-xs font-medium leading-snug ${
                     inc.resolved ? 'text-zinc-500 dark:text-zinc-500' : 'text-zinc-800 dark:text-zinc-200'
                   }`}>
                     {inc.title}
                   </p>
-                  <span className={`flex-shrink-0 font-mono text-[9px] font-semibold uppercase rounded px-1.5 py-0.5 ${
+                  <span className={`flex-shrink-0 font-mono text-[9px] font-semibold tracking-wide rounded px-1.5 py-0.5 ${
                     inc.resolved
                       ? 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-500'
                       : inc.severity === 'critical'
                       ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
                       : 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
                   }`}>
-                    {inc.resolved ? 'RESOLVED' : inc.severity.toUpperCase()}
+                    {inc.resolved ? 'resolved' : inc.severity}
                   </span>
                 </div>
                 <p className="text-[11px] text-zinc-500 dark:text-zinc-500 leading-snug mb-1.5">
@@ -664,35 +724,43 @@ export default function PipelineClient() {
           </div>
 
           {/* SYSTEM EVENTS */}
-          <SectionHeader label="System Events" />
-          <div className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
+          <SectionHeader label="System events" />
+          <div className="px-4 py-2">
             {SYS_EVENTS.map((ev, i) => (
-              <div key={i} className="flex items-start gap-2.5 px-4 py-2">
-                <span className="flex-shrink-0 w-10 pt-0.5 font-mono text-[10px] text-zinc-400 dark:text-zinc-600">
-                  {ev.time}
-                </span>
-                <span className={`flex-shrink-0 mt-[5px] h-1.5 w-1.5 rounded-full ${EVENT_DOT[ev.level]}`} />
-                <p className={`text-[11px] leading-snug ${
-                  ev.level === 'error'
-                    ? 'text-rose-600 dark:text-rose-400'
-                    : ev.level === 'warn'
-                    ? 'text-amber-600 dark:text-amber-400'
-                    : 'text-zinc-600 dark:text-zinc-400'
-                }`}>
-                  {ev.message}
-                </p>
+              <div key={i} className="relative flex items-start gap-3 py-[7px]">
+                {/* Timeline rail */}
+                {i < SYS_EVENTS.length - 1 && (
+                  <span className="absolute left-[13px] top-[18px] bottom-0 w-px bg-zinc-100 dark:bg-zinc-800/80" />
+                )}
+                {/* Dot */}
+                <span className={`relative flex-shrink-0 mt-[3px] h-[7px] w-[7px] rounded-full ring-2 ring-white dark:ring-zinc-950 ${EVENT_DOT[ev.level]}`} />
+                {/* Content */}
+                <div className="flex-1 min-w-0 flex items-start gap-2">
+                  <span className="flex-shrink-0 w-9 font-mono text-[10px] text-zinc-400 dark:text-zinc-600 pt-px">
+                    {ev.time}
+                  </span>
+                  <p className={`text-[11px] leading-snug ${
+                    ev.level === 'error'
+                      ? 'text-rose-600 dark:text-rose-400'
+                      : ev.level === 'warn'
+                      ? 'text-amber-600 dark:text-amber-400'
+                      : 'text-zinc-600 dark:text-zinc-400'
+                  }`}>
+                    {ev.message}
+                  </p>
+                </div>
               </div>
             ))}
           </div>
 
           {/* THEME COVERAGE IMPACT */}
-          <SectionHeader label="Theme Coverage Impact" />
-          <div className="px-4 py-4 space-y-3.5">
+          <SectionHeader label="Theme coverage" />
+          <div className="px-4 py-4 space-y-3">
             {THEME_COV.map((t) => (
               <div key={t.name}>
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-xs text-zinc-700 dark:text-zinc-300">{t.name}</span>
-                  <span className={`font-mono text-xs font-semibold ${
+                  <span className="text-[11px] text-zinc-600 dark:text-zinc-400">{t.name}</span>
+                  <span className={`font-mono text-xs font-bold tabular-nums ${
                     t.pct >= 90
                       ? 'text-emerald-600 dark:text-emerald-400'
                       : t.pct >= 80
@@ -702,19 +770,19 @@ export default function PipelineClient() {
                     {t.pct}%
                   </span>
                 </div>
-                <div className="h-1.5 w-full rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
+                <div className="h-2 w-full rounded-full bg-zinc-100 dark:bg-zinc-800/80 overflow-hidden">
                   <motion.div
                     className="h-full rounded-full"
                     style={{ backgroundColor: t.color, originX: 0 }}
                     initial={{ scaleX: 0 }}
                     animate={{ scaleX: t.pct / 100 }}
-                    transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
+                    transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
                   />
                 </div>
               </div>
             ))}
-            <p className="pt-1 text-[10px] text-zinc-400 dark:text-zinc-600 font-mono leading-relaxed">
-              Coverage reflects % of theme data feeds currently healthy or idle. Degraded/failed feeds reduce signal fidelity.
+            <p className="pt-1.5 text-[10px] text-zinc-400 dark:text-zinc-600 leading-relaxed">
+              Coverage = % of theme feeds healthy or idle. Degraded and failed feeds reduce signal fidelity.
             </p>
           </div>
         </div>
