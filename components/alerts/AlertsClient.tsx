@@ -21,7 +21,7 @@ import ThemeToggle from '@/components/ThemeToggle'
 
 type Severity = 'critical' | 'warning' | 'info'
 type AckState = 'unread' | 'acknowledged' | 'acted'
-type FilterKey = 'all' | 'critical' | 'warning' | 'info' | 'unread' | 'acknowledged'
+type FilterKey = 'all' | 'critical' | 'warning' | 'info' | 'unread' | 'acknowledged' | 'acted'
 
 interface Factor {
   label: string
@@ -385,7 +385,7 @@ const ACK_DOT: Record<AckState, string> = {
 const SeverityBadge = memo(function SeverityBadge({ severity }: { severity: Severity }) {
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider ${SEV[severity].badge}`}
+      className={`inline-flex items-center gap-1.5 rounded px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wide ${SEV[severity].badge}`}
     >
       <span className={`h-1.5 w-1.5 rounded-full ${SEV[severity].dot}`} />
       {severity}
@@ -499,7 +499,7 @@ const DetailPanel = memo(function DetailPanel({
         {/* Scrollable body */}
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
           <div>
-            <p className="text-[11px] font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-600 mb-2">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-600 mb-2">
               Context
             </p>
             <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
@@ -508,7 +508,7 @@ const DetailPanel = memo(function DetailPanel({
           </div>
 
           <div>
-            <p className="text-[11px] font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-600 mb-2">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-600 mb-2">
               Key factors
             </p>
             <div className="grid grid-cols-2 gap-px bg-zinc-200 dark:bg-zinc-800 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-800">
@@ -527,7 +527,7 @@ const DetailPanel = memo(function DetailPanel({
           </div>
 
           <div>
-            <p className="text-[11px] font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-600 mb-2">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-600 mb-2">
               Securities
             </p>
             <div className="flex flex-wrap gap-1.5">
@@ -543,7 +543,7 @@ const DetailPanel = memo(function DetailPanel({
           </div>
 
           <div>
-            <p className="text-[11px] font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-600 mb-2">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-600 mb-2">
               Event timeline
             </p>
             <div className="relative pl-5">
@@ -601,7 +601,7 @@ const DetailPanel = memo(function DetailPanel({
           )}
           <div className="flex-1" />
           <span
-            className={`inline-flex items-center gap-1 rounded px-2 py-1 font-mono text-[10px] font-semibold uppercase tracking-wider ${
+            className={`inline-flex items-center gap-1 rounded px-2 py-1 font-mono text-[10px] font-semibold uppercase tracking-wide ${
               alert.ack === 'acted'
                 ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
                 : alert.ack === 'acknowledged'
@@ -630,18 +630,24 @@ function LiveClock() {
   )
 }
 
-// ─── Filter tabs ──────────────────────────────────────────────────────────────
+// ─── Stat filter strip ────────────────────────────────────────────────────────
 
-const FILTER_LABELS: Record<FilterKey, string> = {
-  all: 'All',
-  critical: 'Critical',
-  warning: 'Warning',
-  info: 'Info',
-  unread: 'Unread',
-  acknowledged: 'Acked',
-}
+const STAT_TILES: Array<{
+  key: FilterKey
+  label: string
+  numCls: string
+  accentCls: string
+}> = [
+  { key: 'all',          label: 'Total',    numCls: 'text-zinc-900 dark:text-zinc-100',       accentCls: 'bg-zinc-400 dark:bg-zinc-500' },
+  { key: 'critical',     label: 'Critical', numCls: 'text-rose-600 dark:text-rose-400',        accentCls: 'bg-rose-500' },
+  { key: 'warning',      label: 'Warning',  numCls: 'text-amber-600 dark:text-amber-400',      accentCls: 'bg-amber-500' },
+  { key: 'info',         label: 'Info',     numCls: 'text-blue-600 dark:text-blue-400',        accentCls: 'bg-blue-500' },
+  { key: 'unread',       label: 'Unread',   numCls: 'text-zinc-900 dark:text-zinc-100',        accentCls: 'bg-zinc-900 dark:bg-zinc-100' },
+  { key: 'acknowledged', label: 'Acked',    numCls: 'text-zinc-600 dark:text-zinc-400',        accentCls: 'bg-zinc-400 dark:bg-zinc-500' },
+  { key: 'acted',        label: 'Acted',    numCls: 'text-emerald-600 dark:text-emerald-400',  accentCls: 'bg-emerald-500' },
+]
 
-function FilterTabs({
+function StatFilter({
   active,
   counts,
   onChange,
@@ -651,39 +657,36 @@ function FilterTabs({
   onChange: (k: FilterKey) => void
 }) {
   return (
-    <div className="flex items-center border-b border-zinc-200 dark:border-zinc-800 px-4 overflow-x-auto">
-      {(Object.keys(FILTER_LABELS) as FilterKey[]).map((k) => (
-        <button
-          key={k}
-          onClick={() => onChange(k)}
-          className={[
-            'relative flex items-center gap-1.5 px-3 py-2.5 text-xs font-medium transition-colors whitespace-nowrap',
-            active === k
-              ? 'text-zinc-900 dark:text-zinc-100'
-              : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300',
-          ].join(' ')}
-        >
-          {FILTER_LABELS[k]}
-          {counts[k] > 0 && (
-            <span
-              className={`font-mono text-[10px] rounded px-1 ${
-                active === k
-                  ? 'bg-zinc-200 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300'
-                  : 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-500'
-              }`}
-            >
-              {counts[k]}
+    <div className="flex flex-shrink-0 divide-x divide-zinc-200 dark:divide-zinc-800 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50">
+      {STAT_TILES.map(({ key, label, numCls, accentCls }) => {
+        const isActive = active === key
+        return (
+          <button
+            key={key}
+            onClick={() => onChange(key)}
+            className={[
+              'relative flex flex-1 flex-col items-center justify-center gap-1 py-3 transition-colors duration-100',
+              isActive
+                ? 'bg-white dark:bg-zinc-950'
+                : 'hover:bg-zinc-100/60 dark:hover:bg-white/[0.025]',
+            ].join(' ')}
+          >
+            {isActive && (
+              <motion.div
+                layoutId="stat-filter-indicator"
+                className={`absolute bottom-0 left-2 right-2 h-0.5 rounded-t-full ${accentCls}`}
+                transition={{ type: 'spring', stiffness: 400, damping: 32 }}
+              />
+            )}
+            <span className={`font-mono text-base font-bold tabular-nums leading-none ${isActive ? numCls : 'text-zinc-500 dark:text-zinc-500'}`}>
+              {counts[key]}
             </span>
-          )}
-          {active === k && (
-            <motion.div
-              layoutId="filter-indicator"
-              className="absolute bottom-0 left-0 right-0 h-0.5 bg-zinc-900 dark:bg-zinc-100"
-              transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-            />
-          )}
-        </button>
-      ))}
+            <span className={`text-[10px] tracking-wide ${isActive ? 'text-zinc-500 dark:text-zinc-400' : 'text-zinc-400 dark:text-zinc-600'}`}>
+              {label}
+            </span>
+          </button>
+        )
+      })}
     </div>
   )
 }
@@ -711,6 +714,7 @@ export default function AlertsClient() {
       info: alerts.filter((a) => a.severity === 'info').length,
       unread: alerts.filter((a) => a.ack === 'unread').length,
       acknowledged: alerts.filter((a) => a.ack === 'acknowledged').length,
+      acted: alerts.filter((a) => a.ack === 'acted').length,
     }),
     [alerts]
   )
@@ -722,6 +726,7 @@ export default function AlertsClient() {
     else if (filter === 'info') list = list.filter((a) => a.severity === 'info')
     else if (filter === 'unread') list = list.filter((a) => a.ack === 'unread')
     else if (filter === 'acknowledged') list = list.filter((a) => a.ack === 'acknowledged')
+    else if (filter === 'acted') list = list.filter((a) => a.ack === 'acted')
     if (search.trim()) {
       const q = search.toLowerCase()
       list = list.filter(
@@ -754,18 +759,16 @@ export default function AlertsClient() {
 
   const handleClose = useCallback(() => setSelectedId(null), [])
 
-  const actedCount = useMemo(() => alerts.filter((a) => a.ack === 'acted').length, [alerts])
-
   return (
     <div className="flex h-full flex-col bg-white dark:bg-zinc-950">
       {/* Header */}
       <div className="flex h-14 flex-shrink-0 items-center justify-between border-b border-zinc-200 px-5 dark:border-zinc-800">
         <div className="flex items-center gap-3">
-          <Bell size={16} weight="fill" className="text-zinc-500 dark:text-zinc-400" />
-          <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Alerts</h1>
+          <Bell size={15} weight="fill" className="text-zinc-400 dark:text-zinc-500" />
+          <h1 className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">Alerts</h1>
           {counts.unread > 0 && (
-            <span className="flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-rose-500/15 px-1.5 font-mono text-[10px] font-semibold text-rose-600 dark:bg-rose-500/20 dark:text-rose-400">
-              {counts.unread}
+            <span className="flex h-5 min-w-[1.25rem] items-center justify-center rounded bg-rose-500/15 px-1.5 font-mono text-[10px] font-semibold text-rose-600 dark:bg-rose-500/20 dark:text-rose-400">
+              {counts.unread} unread
             </span>
           )}
         </div>
@@ -775,30 +778,8 @@ export default function AlertsClient() {
         </div>
       </div>
 
-      {/* Stat strip */}
-      <div className="flex flex-shrink-0 items-center gap-6 border-b border-zinc-200 dark:border-zinc-800 px-5 py-2 bg-zinc-50 dark:bg-zinc-900/50">
-        {(['critical', 'warning', 'info'] as Severity[]).map((s) => (
-          <div key={s} className="flex items-center gap-2">
-            <span className={`h-1.5 w-1.5 rounded-full ${SEV[s].dot}`} />
-            <span className="font-mono text-[11px] text-zinc-500 dark:text-zinc-500">
-              {counts[s as FilterKey]} {s}
-            </span>
-          </div>
-        ))}
-        <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-800" />
-        <span className="font-mono text-[11px] text-zinc-500 dark:text-zinc-500">
-          {counts.unread} unread
-        </span>
-        <span className="font-mono text-[11px] text-zinc-500 dark:text-zinc-500">
-          {counts.acknowledged} acked
-        </span>
-        <span className="font-mono text-[11px] text-zinc-500 dark:text-zinc-500">
-          {actedCount} acted
-        </span>
-      </div>
-
-      {/* Filter tabs */}
-      <FilterTabs active={filter} counts={counts} onChange={setFilter} />
+      {/* Stat filter strip — replaces separate stat bar + tab bar */}
+      <StatFilter active={filter} counts={counts} onChange={setFilter} />
 
       {/* Search */}
       <div className="flex-shrink-0 px-4 py-2.5 border-b border-zinc-200 dark:border-zinc-800">
@@ -842,7 +823,7 @@ export default function AlertsClient() {
               <div key={group}>
                 <div className="sticky top-0 z-10 flex items-center gap-2.5 px-4 py-2 bg-zinc-50/90 dark:bg-zinc-900/90 backdrop-blur-sm border-b border-zinc-100 dark:border-zinc-800">
                   <Clock size={11} className="text-zinc-400 dark:text-zinc-600" />
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-600">
+                  <span className="text-[10px] font-semibold tracking-wide text-zinc-500 dark:text-zinc-400">
                     {group}
                   </span>
                   <span className="font-mono text-[10px] text-zinc-300 dark:text-zinc-700">
