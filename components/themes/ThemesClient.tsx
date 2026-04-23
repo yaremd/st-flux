@@ -463,7 +463,7 @@ const HoldingsSection = memo(function HoldingsSection({
   }
   const row = {
     hidden: { opacity: 0, x: -10 },
-    show: { opacity: 1, x: 0, transition: { duration: 0.28, ease: [0.16, 1, 0.3, 1] } },
+    show: { opacity: 1, x: 0, transition: { duration: 0.28, ease: [0.16, 1, 0.3, 1] as const } },
   }
 
   return (
