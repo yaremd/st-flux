@@ -41,6 +41,15 @@ interface BottleneckWarning {
   horizon: string
 }
 
+interface PendingInsight {
+  id: string
+  title: string
+  analyst: string
+  theme: string
+  category: 'THESIS UPDATE' | 'OPPORTUNITY' | 'RISK'
+  submittedAt: string
+}
+
 // ─── Mock Data ────────────────────────────────────────────────────────────────
 
 const RUN_META = {
@@ -93,6 +102,25 @@ const BOTTLENECK_WARNINGS: BottleneckWarning[] = [
     divergence: '25%/yr vs 70%/yr',
     detail: 'Memory bandwidth scaling at 25%/yr while logic compute grows at 70%/yr. Mismatch widening for 3 consecutive quarters.',
     horizon: 'Q3 2026',
+  },
+]
+
+const PENDING_INSIGHTS: PendingInsight[] = [
+  {
+    id: 'i1',
+    title: 'NVDA HBM3e capacity constraints may compress margin by 180–220bps in H2',
+    analyst: 'Marco R.',
+    theme: 'AI Infrastructure',
+    category: 'THESIS UPDATE',
+    submittedAt: '04:38 UTC',
+  },
+  {
+    id: 'i2',
+    title: 'FERC Order 1920 implementation delay opens 6–9 month window for NEE grid assets',
+    analyst: 'Sara K.',
+    theme: 'Clean Energy',
+    category: 'OPPORTUNITY',
+    submittedAt: '03:51 UTC',
   },
 ]
 
@@ -260,6 +288,46 @@ const BottleneckRow = memo(function BottleneckRow({
   )
 })
 
+const INSIGHT_CATEGORY: Record<PendingInsight['category'], string> = {
+  'THESIS UPDATE': 'bg-blue-500/10 text-blue-600 dark:bg-blue-500/15 dark:text-blue-400',
+  'OPPORTUNITY':   'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400',
+  'RISK':          'bg-rose-500/10 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400',
+}
+
+const InsightRow = memo(function InsightRow({
+  item,
+  index,
+}: {
+  item: PendingInsight
+  index: number
+}) {
+  return (
+    <motion.a
+      href="/insights"
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.55 + index * 0.07, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+      className="flex items-start gap-3 rounded-lg border border-zinc-200 bg-white px-4 py-3 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800/60 transition-colors"
+    >
+      <div className="min-w-0 flex-1">
+        <div className="mb-1 flex flex-wrap items-center gap-2">
+          <span className={`rounded px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-wide ${INSIGHT_CATEGORY[item.category]}`}>
+            {item.category}
+          </span>
+          <span className="text-[10px] text-zinc-400 dark:text-zinc-600">{item.theme}</span>
+        </div>
+        <p className="text-xs leading-snug text-zinc-700 dark:text-zinc-300">{item.title}</p>
+        <div className="mt-1.5 flex items-center gap-2">
+          <span className="font-mono text-[10px] text-zinc-400 dark:text-zinc-600">{item.analyst}</span>
+          <span className="text-zinc-300 dark:text-zinc-700">·</span>
+          <span className="font-mono text-[10px] text-zinc-400 dark:text-zinc-600">{item.submittedAt}</span>
+        </div>
+      </div>
+      <ArrowRight size={11} className="mt-1 flex-shrink-0 text-zinc-300 dark:text-zinc-700" />
+    </motion.a>
+  )
+})
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function OverviewClient() {
@@ -352,6 +420,16 @@ export default function OverviewClient() {
                 <DigestSection label="Bottleneck watch" count={BOTTLENECK_WARNINGS.length} delay={0.45} />
                 {BOTTLENECK_WARNINGS.map((item, i) => (
                   <BottleneckRow key={item.id} item={item} index={i} />
+                ))}
+              </div>
+            )}
+
+            {/* ── Insights pending review ── */}
+            {PENDING_INSIGHTS.length > 0 && (
+              <div className="space-y-2">
+                <DigestSection label="Insights pending review" count={PENDING_INSIGHTS.length} delay={0.52} />
+                {PENDING_INSIGHTS.map((item, i) => (
+                  <InsightRow key={item.id} item={item} index={i} />
                 ))}
               </div>
             )}

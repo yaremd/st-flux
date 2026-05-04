@@ -16,6 +16,7 @@ import {
   Minus,
   Warning,
   ChartLineUp,
+  ArrowsLeftRight,
 } from '@phosphor-icons/react'
 import ThemeToggle from '@/components/ThemeToggle'
 
@@ -670,6 +671,27 @@ const DetailPanel = memo(function DetailPanel({
               ))}
             </div>
           </div>
+
+          {alert.alertType === 'bottleneck' && (
+            <div>
+              <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-600 mb-2">
+                Scaling detail
+              </p>
+              <a
+                href="/scaling"
+                className="flex items-center justify-between rounded-lg border border-amber-200/60 bg-amber-50/50 px-4 py-3 hover:bg-amber-50 dark:border-amber-500/20 dark:bg-amber-500/5 dark:hover:bg-amber-500/10 transition-colors"
+              >
+                <div className="flex items-center gap-2.5">
+                  <ArrowsLeftRight size={13} className="text-amber-500" />
+                  <div>
+                    <p className="text-xs font-medium text-zinc-700 dark:text-zinc-300">View in Scaling Tracker</p>
+                    <p className="font-mono text-[10px] text-zinc-400">Full supply/demand breakdown</p>
+                  </div>
+                </div>
+                <CaretRight size={12} className="text-zinc-400" />
+              </a>
+            </div>
+          )}
         </div>
 
         {/* Action footer */}
