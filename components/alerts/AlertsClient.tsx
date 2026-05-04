@@ -14,6 +14,8 @@ import {
   TrendUp,
   TrendDown,
   Minus,
+  Warning,
+  ChartLineUp,
 } from '@phosphor-icons/react'
 import ThemeToggle from '@/components/ThemeToggle'
 
@@ -21,7 +23,9 @@ import ThemeToggle from '@/components/ThemeToggle'
 
 type Severity = 'critical' | 'warning' | 'info'
 type AckState = 'unread' | 'acknowledged' | 'acted'
-type FilterKey = 'all' | 'critical' | 'warning' | 'info' | 'unread' | 'acknowledged' | 'acted'
+type AlertCategory = 'action' | 'monitor' | 'background'
+type AlertType = 'standard' | 'position-risk' | 'bottleneck' | 'methodology'
+type FilterKey = 'all' | 'action' | 'monitor' | 'background'
 
 interface Factor {
   label: string
@@ -38,6 +42,8 @@ interface Alert {
   id: string
   severity: Severity
   ack: AckState
+  category: AlertCategory
+  alertType: AlertType
   title: string
   summary: string
   context: string
@@ -58,6 +64,8 @@ const MOCK_ALERTS: Alert[] = [
     id: 'a1',
     severity: 'critical',
     ack: 'unread',
+    category: 'action',
+    alertType: 'position-risk',
     title: 'AI Infrastructure capex divergence',
     summary: 'NVDA forward capex guidance widened 2.3σ above consensus in after-hours update.',
     context:
@@ -82,6 +90,8 @@ const MOCK_ALERTS: Alert[] = [
     id: 'a2',
     severity: 'critical',
     ack: 'unread',
+    category: 'action',
+    alertType: 'position-risk',
     title: 'Defense supply chain concentration risk',
     summary: 'Single-supplier dependency flagged across 4 theme holdings; geopolitical risk elevated.',
     context:
@@ -106,6 +116,8 @@ const MOCK_ALERTS: Alert[] = [
     id: 'a3',
     severity: 'warning',
     ack: 'acknowledged',
+    category: 'monitor',
+    alertType: 'standard',
     title: 'Clean Energy permitting velocity slowdown',
     summary: 'Federal permitting approvals down 31% MoM; utility-scale solar pipeline at risk.',
     context:
@@ -130,6 +142,8 @@ const MOCK_ALERTS: Alert[] = [
     id: 'a4',
     severity: 'warning',
     ack: 'unread',
+    category: 'monitor',
+    alertType: 'standard',
     title: 'Space Economy launch manifest slippage',
     summary: 'Starship Block 4 manifest pushed 6 weeks; downstream payload operators at risk.',
     context:
@@ -154,6 +168,8 @@ const MOCK_ALERTS: Alert[] = [
     id: 'a5',
     severity: 'info',
     ack: 'acted',
+    category: 'background',
+    alertType: 'standard',
     title: 'Longevity Tech — FDA Breakthrough Therapy granted',
     summary: 'VRNA granted Breakthrough Therapy designation; thesis acceleration signal.',
     context:
@@ -178,6 +194,8 @@ const MOCK_ALERTS: Alert[] = [
     id: 'a6',
     severity: 'info',
     ack: 'unread',
+    category: 'background',
+    alertType: 'standard',
     title: 'Deglobalization: nearshoring capex uptick',
     summary: 'Mexican industrial real estate absorption hit 7-year high in Q1 data release.',
     context:
@@ -202,6 +220,8 @@ const MOCK_ALERTS: Alert[] = [
     id: 'a7',
     severity: 'warning',
     ack: 'acknowledged',
+    category: 'monitor',
+    alertType: 'standard',
     title: 'AI Infrastructure cooling cost revision',
     summary: 'Data center cooling OpEx revised +23% across 3 hyperscalers; margin compression ahead.',
     context:
@@ -226,6 +246,8 @@ const MOCK_ALERTS: Alert[] = [
     id: 'a8',
     severity: 'info',
     ack: 'unread',
+    category: 'background',
+    alertType: 'standard',
     title: 'Defense & Autonomy: NATO budget resolution',
     summary: 'NATO members committed to 2.5% GDP defense floor; policy tailwind confirmed.',
     context:
@@ -251,6 +273,8 @@ const MOCK_ALERTS: Alert[] = [
     id: 'a9',
     severity: 'critical',
     ack: 'acted',
+    category: 'action',
+    alertType: 'position-risk',
     title: 'Clean Energy grid interconnection queue spike',
     summary: 'FERC data: 2,847 projects pending interconnection, up 38% YoY; timeline risk elevated.',
     context:
@@ -275,6 +299,8 @@ const MOCK_ALERTS: Alert[] = [
     id: 'a10',
     severity: 'warning',
     ack: 'acknowledged',
+    category: 'monitor',
+    alertType: 'standard',
     title: 'Space Economy — FCC spectrum ruling postponed',
     summary: 'FCC spectrum allocation ruling delayed 90 days; ASTS deployment timeline at risk.',
     context:
@@ -297,8 +323,10 @@ const MOCK_ALERTS: Alert[] = [
   },
   {
     id: 'a11',
-    severity: 'info',
+    severity: 'warning',
     ack: 'acknowledged',
+    category: 'monitor',
+    alertType: 'standard',
     title: 'Longevity Tech: GLP-1 meta-analysis confirms CV benefit',
     summary: 'Landmark NEJM meta-analysis confirms cardiovascular benefit across 7 compounds.',
     context:
@@ -316,13 +344,15 @@ const MOCK_ALERTS: Alert[] = [
     timeline: [
       { time: 'Tue 20:00', event: 'NEJM study published online' },
       { time: 'Tue 20:19', event: 'Medical NLP classifier: strong positive' },
-      { time: 'Tue 20:44', event: 'Info alert generated — thesis support' },
+      { time: 'Tue 20:44', event: 'Monitor alert generated — thesis support' },
     ],
   },
   {
     id: 'a12',
     severity: 'warning',
     ack: 'unread',
+    category: 'monitor',
+    alertType: 'standard',
     title: 'Deglobalization: surprise EU tariff escalation',
     summary: 'Unannounced 15% tariff on EU industrial imports; supply chain re-routing risk.',
     context:
@@ -341,6 +371,58 @@ const MOCK_ALERTS: Alert[] = [
       { time: 'Tue 17:45', event: 'Executive order signed' },
       { time: 'Tue 18:09', event: 'Trade policy NLP alert triggered' },
       { time: 'Tue 18:31', event: 'Warning generated — supply chain review' },
+    ],
+  },
+  {
+    id: 'a13',
+    severity: 'warning',
+    ack: 'unread',
+    category: 'monitor',
+    alertType: 'bottleneck',
+    title: 'Memory/Logic scaling mismatch — AI compute bottleneck emerging',
+    summary: 'HBM demand growing at 70%/yr vs HBM supply at 25%/yr; Q3 2026 AI compute constraint projected.',
+    context:
+      'The StellarFlux bottleneck model detects a diverging scaling rate between HBM3e memory supply (+25% CAGR) and inference-time logic demand (+70% CAGR). At current trajectories, the mismatch creates a supply-constrained AI compute environment by Q3 2026, affecting theme models for AI Infrastructure holdings with memory-dependent workloads. Historical precedent from the 2021 DRAM shortage suggests 2–3 quarter lag before pricing inflects.',
+    timestamp: new Date(NOW - 41 * 3600000).toISOString(),
+    dateGroup: 'Yesterday',
+    theme: 'AI Infrastructure',
+    factors: [
+      { label: 'HBM supply CAGR', value: '+25%/yr', direction: 'up' },
+      { label: 'Logic demand CAGR', value: '+70%/yr', direction: 'up' },
+      { label: 'Divergence rate', value: '2.8×', direction: 'up' },
+      { label: 'Constraint horizon', value: 'Q3 2026', direction: 'flat' },
+    ],
+    securities: ['NVDA', 'MU', 'HXCO', 'AMAT'],
+    timeline: [
+      { time: 'Tue 15:00', event: 'Bottleneck model batch run completed' },
+      { time: 'Tue 15:18', event: 'Divergence threshold exceeded (2.5×)' },
+      { time: 'Tue 15:41', event: 'Bottleneck warning generated' },
+    ],
+  },
+  {
+    id: 'a14',
+    severity: 'info',
+    ack: 'unread',
+    category: 'background',
+    alertType: 'methodology',
+    title: 'ONS Labour Force Survey methodology revision',
+    summary: 'UK unemployment series restated -0.4pp from 2022; Deglobalization macro model inputs affected.',
+    context:
+      'The Office for National Statistics published a methodological update to the Labour Force Survey, resulting in a 0.4pp downward revision to the UK unemployment series dating back to Q1 2022. This affects the macro input layer of the Deglobalization theme model, which uses UK labor market tightness as a proxy for nearshoring demand pressure. The model will be re-run with restated inputs overnight; expect minor conviction score adjustment.',
+    timestamp: new Date(NOW - 44 * 3600000).toISOString(),
+    dateGroup: 'Yesterday',
+    theme: 'Deglobalization',
+    factors: [
+      { label: 'Series revision', value: '-0.4pp', direction: 'down' },
+      { label: 'History restated from', value: 'Q1 2022', direction: 'flat' },
+      { label: 'Model inputs affected', value: '3 signals', direction: 'up' },
+      { label: 'Conviction delta est.', value: '< -0.05', direction: 'down' },
+    ],
+    securities: ['VESTA', 'FIBRAMQ', 'TEF'],
+    timeline: [
+      { time: 'Tue 16:00', event: 'ONS methodological note published' },
+      { time: 'Tue 16:27', event: 'Data pipeline diff detected — 0.4pp revision' },
+      { time: 'Tue 16:49', event: 'Methodology change alert generated' },
     ],
   },
 ]
@@ -393,6 +475,26 @@ const SeverityBadge = memo(function SeverityBadge({ severity }: { severity: Seve
   )
 })
 
+const TypeBadge = memo(function TypeBadge({ alertType }: { alertType: AlertType }) {
+  if (alertType === 'bottleneck') {
+    return (
+      <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wide bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400">
+        <Warning size={9} weight="fill" />
+        Bottleneck
+      </span>
+    )
+  }
+  if (alertType === 'methodology') {
+    return (
+      <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wide bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400">
+        <ChartLineUp size={9} weight="fill" />
+        Data Change
+      </span>
+    )
+  }
+  return null
+})
+
 const DirectionIcon = memo(function DirectionIcon({
   direction,
 }: {
@@ -427,8 +529,9 @@ const AlertRow = memo(function AlertRow({
           <span className={`block h-2 w-2 rounded-full ${ACK_DOT[alert.ack]}`} />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
             <SeverityBadge severity={alert.severity} />
+            <TypeBadge alertType={alert.alertType} />
             <span className="font-mono text-[10px] text-zinc-400 dark:text-zinc-600">
               {alert.theme}
             </span>
@@ -465,6 +568,13 @@ const DetailPanel = memo(function DetailPanel({
 }) {
   if (!alert) return null
 
+  const factorSectionLabel =
+    alert.alertType === 'bottleneck'
+      ? 'Scaling properties'
+      : alert.alertType === 'methodology'
+      ? 'Metric impact'
+      : 'Key factors'
+
   return (
     <AnimatePresence mode="wait">
       <motion.div
@@ -478,8 +588,9 @@ const DetailPanel = memo(function DetailPanel({
         {/* Panel header */}
         <div className="flex items-start justify-between gap-3 border-b border-zinc-200 dark:border-zinc-800 px-5 py-4">
           <div className="min-w-0">
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
               <SeverityBadge severity={alert.severity} />
+              <TypeBadge alertType={alert.alertType} />
               <span className="font-mono text-[10px] text-zinc-400 dark:text-zinc-600">
                 {alert.theme}
               </span>
@@ -509,7 +620,7 @@ const DetailPanel = memo(function DetailPanel({
 
           <div>
             <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-600 mb-2">
-              Key factors
+              {factorSectionLabel}
             </p>
             <div className="grid grid-cols-2 gap-px bg-zinc-200 dark:bg-zinc-800 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-800">
               {alert.factors.map((f) => (
@@ -638,13 +749,10 @@ const STAT_TILES: Array<{
   numCls: string
   accentCls: string
 }> = [
-  { key: 'all',          label: 'Total',    numCls: 'text-zinc-900 dark:text-zinc-100',       accentCls: 'bg-zinc-400 dark:bg-zinc-500' },
-  { key: 'critical',     label: 'Critical', numCls: 'text-rose-600 dark:text-rose-400',        accentCls: 'bg-rose-500' },
-  { key: 'warning',      label: 'Warning',  numCls: 'text-amber-600 dark:text-amber-400',      accentCls: 'bg-amber-500' },
-  { key: 'info',         label: 'Info',     numCls: 'text-blue-600 dark:text-blue-400',        accentCls: 'bg-blue-500' },
-  { key: 'unread',       label: 'Unread',   numCls: 'text-zinc-900 dark:text-zinc-100',        accentCls: 'bg-zinc-900 dark:bg-zinc-100' },
-  { key: 'acknowledged', label: 'Acked',    numCls: 'text-zinc-600 dark:text-zinc-400',        accentCls: 'bg-zinc-400 dark:bg-zinc-500' },
-  { key: 'acted',        label: 'Acted',    numCls: 'text-emerald-600 dark:text-emerald-400',  accentCls: 'bg-emerald-500' },
+  { key: 'all',        label: 'All',             numCls: 'text-zinc-900 dark:text-zinc-100',    accentCls: 'bg-zinc-400 dark:bg-zinc-500' },
+  { key: 'action',     label: 'Action Required', numCls: 'text-rose-600 dark:text-rose-400',    accentCls: 'bg-rose-500' },
+  { key: 'monitor',    label: 'Monitor',         numCls: 'text-amber-600 dark:text-amber-400',  accentCls: 'bg-amber-500' },
+  { key: 'background', label: 'Background',      numCls: 'text-blue-600 dark:text-blue-400',    accentCls: 'bg-blue-500' },
 ]
 
 function StatFilter({
@@ -681,7 +789,7 @@ function StatFilter({
             <span className={`font-mono text-base font-bold tabular-nums leading-none ${isActive ? numCls : 'text-zinc-500 dark:text-zinc-500'}`}>
               {counts[key]}
             </span>
-            <span className={`text-[10px] tracking-wide ${isActive ? 'text-zinc-500 dark:text-zinc-400' : 'text-zinc-400 dark:text-zinc-600'}`}>
+            <span className={`text-[10px] tracking-wide text-center leading-tight ${isActive ? 'text-zinc-500 dark:text-zinc-400' : 'text-zinc-400 dark:text-zinc-600'}`}>
               {label}
             </span>
           </button>
@@ -696,7 +804,7 @@ function StatFilter({
 export default function AlertsClient() {
   const [alerts, setAlerts] = useState<Alert[]>(MOCK_ALERTS)
   const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [filter, setFilter] = useState<FilterKey>('all')
+  const [filter, setFilter] = useState<FilterKey>('action')
   const [search, setSearch] = useState('')
 
   const panelOpen = selectedId !== null
@@ -708,25 +816,22 @@ export default function AlertsClient() {
 
   const counts = useMemo(
     (): Record<FilterKey, number> => ({
-      all: alerts.length,
-      critical: alerts.filter((a) => a.severity === 'critical').length,
-      warning: alerts.filter((a) => a.severity === 'warning').length,
-      info: alerts.filter((a) => a.severity === 'info').length,
-      unread: alerts.filter((a) => a.ack === 'unread').length,
-      acknowledged: alerts.filter((a) => a.ack === 'acknowledged').length,
-      acted: alerts.filter((a) => a.ack === 'acted').length,
+      all:        alerts.length,
+      action:     alerts.filter((a) => a.category === 'action').length,
+      monitor:    alerts.filter((a) => a.category === 'monitor').length,
+      background: alerts.filter((a) => a.category === 'background').length,
     }),
+    [alerts]
+  )
+
+  const actionUnread = useMemo(
+    () => alerts.filter((a) => a.category === 'action' && a.ack === 'unread').length,
     [alerts]
   )
 
   const filtered = useMemo(() => {
     let list = alerts
-    if (filter === 'critical') list = list.filter((a) => a.severity === 'critical')
-    else if (filter === 'warning') list = list.filter((a) => a.severity === 'warning')
-    else if (filter === 'info') list = list.filter((a) => a.severity === 'info')
-    else if (filter === 'unread') list = list.filter((a) => a.ack === 'unread')
-    else if (filter === 'acknowledged') list = list.filter((a) => a.ack === 'acknowledged')
-    else if (filter === 'acted') list = list.filter((a) => a.ack === 'acted')
+    if (filter !== 'all') list = list.filter((a) => a.category === filter)
     if (search.trim()) {
       const q = search.toLowerCase()
       list = list.filter(
@@ -766,9 +871,9 @@ export default function AlertsClient() {
         <div className="flex items-center gap-3">
           <Bell size={15} weight="fill" className="text-zinc-400 dark:text-zinc-500" />
           <h1 className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">Alerts</h1>
-          {counts.unread > 0 && (
+          {actionUnread > 0 && (
             <span className="flex h-5 min-w-[1.25rem] items-center justify-center rounded bg-rose-500/15 px-1.5 font-mono text-[10px] font-semibold text-rose-600 dark:bg-rose-500/20 dark:text-rose-400">
-              {counts.unread} unread
+              {actionUnread} action
             </span>
           )}
         </div>
@@ -778,7 +883,7 @@ export default function AlertsClient() {
         </div>
       </div>
 
-      {/* Stat filter strip — replaces separate stat bar + tab bar */}
+      {/* Stat filter strip */}
       <StatFilter active={filter} counts={counts} onChange={setFilter} />
 
       {/* Search */}

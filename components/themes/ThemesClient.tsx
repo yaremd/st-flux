@@ -18,6 +18,8 @@ type ConvictionStatus = 'strong' | 'moderate' | 'watch' | 'review'
 type SignalType = 'positive' | 'negative' | 'neutral'
 type RiskLevel = 'high' | 'medium' | 'low'
 type AssumptionStatus = 'holding' | 'at-risk' | 'broken'
+type FrameworkType = 'sa' | 'dalio' | 'godley'
+type HorizonType = 'historical' | 'forward'
 
 interface Holding {
   ticker: string
@@ -52,6 +54,28 @@ interface Assumption {
   status: AssumptionStatus
 }
 
+interface FrameworkFactor {
+  label: string
+  value: string
+  favorable: boolean | null // null = neutral
+}
+
+interface DalioView {
+  debtCyclePhase: string
+  creditImpulse: number
+  liquidityCondition: 'tight' | 'neutral' | 'loose'
+  summary: string
+  factors: FrameworkFactor[]
+}
+
+interface GodleyView {
+  sectorBalance: string
+  flowConsistency: 'strong' | 'moderate' | 'fragile'
+  keyConstraint: string
+  summary: string
+  factors: FrameworkFactor[]
+}
+
 interface Theme {
   id: string
   name: string
@@ -67,6 +91,9 @@ interface Theme {
   catalysts: Catalyst[]
   risks: Risk[]
   convictionHistory: number[]
+  forwardConviction12m: number[]
+  dalioView: DalioView
+  godleyView: GodleyView
 }
 
 // ─── Mock data ────────────────────────────────────────────────────────────────
@@ -117,6 +144,31 @@ const THEMES: Theme[] = [
       { label: 'Power grid permitting failure', probability: 'medium', impact: 'medium', notes: 'Data center construction delays of 2–4 qtrs becoming baseline' },
     ],
     convictionHistory: [82.1, 82.8, 82.4, 83.1, 84.2, 83.7, 84.4, 85.1, 84.8, 84.3, 85.7, 86.2, 85.9, 86.4, 87.1, 86.8, 86.2, 86.9, 87.0, 87.3, 86.8, 86.4, 87.1, 87.2, 86.7, 87.0, 87.1, 87.3, 87.2, 87.4],
+    forwardConviction12m: [87.8, 88.3, 88.9, 89.2, 88.7, 89.1, 89.6, 90.1, 89.7, 90.2, 90.8, 91.3],
+    dalioView: {
+      debtCyclePhase: 'Mid-expansion',
+      creditImpulse: 0.31,
+      liquidityCondition: 'loose',
+      summary: 'Mid-expansion debt cycle strongly supports hyperscaler capex. Positive credit impulse and loose large-cap liquidity sustain the AI infrastructure build-out. Consistent with Dalio\'s template for late technology adoption phases.',
+      factors: [
+        { label: 'Debt cycle phase', value: 'Mid-expansion', favorable: true },
+        { label: 'Credit impulse (6m)', value: '+0.31', favorable: true },
+        { label: 'Liquidity condition', value: 'Loose (large-cap)', favorable: true },
+        { label: 'Productivity shock', value: '+3.1σ vs baseline', favorable: true },
+      ],
+    },
+    godleyView: {
+      sectorBalance: 'Corporate deficit / Household surplus',
+      flowConsistency: 'strong',
+      keyConstraint: 'Power grid physical capacity',
+      summary: 'Hyperscaler capex is financed by strong retained earnings and equity markets. Household sector surplus funds corporate investment. Physical grid capacity is the binding stock-flow constraint on total investment velocity.',
+      factors: [
+        { label: 'Corporate sector', value: 'Investing (deficit)', favorable: true },
+        { label: 'Government sector', value: 'Neutral (no direct subsidy)', favorable: null },
+        { label: 'Household sector', value: 'Surplus (funding capex)', favorable: true },
+        { label: 'Flow constraint', value: 'Grid capacity bottleneck', favorable: false },
+      ],
+    },
   },
   {
     id: 'clean-energy',
@@ -162,6 +214,31 @@ const THEMES: Theme[] = [
       { label: 'Supply chain tariff escalation', probability: 'medium', impact: 'medium', notes: 'ENPH and RUN more exposed than FSLR (domestic manufacturing)' },
     ],
     convictionHistory: [76.2, 75.8, 75.4, 74.9, 73.7, 74.2, 74.1, 73.6, 73.2, 72.8, 73.1, 72.7, 71.9, 72.3, 72.1, 71.6, 70.8, 72.1, 71.7, 71.4, 70.9, 72.2, 72.0, 71.8, 72.3, 73.1, 72.7, 72.4, 72.0, 72.1],
+    forwardConviction12m: [71.6, 71.2, 71.8, 72.4, 72.9, 73.6, 73.2, 73.8, 74.3, 74.1, 74.7, 75.2],
+    dalioView: {
+      debtCyclePhase: 'Late-cycle pressure',
+      creditImpulse: -0.14,
+      liquidityCondition: 'tight',
+      summary: 'Elevated project finance rates and tightening credit conditions are compressing solar/wind IRRs. Long-duration yield-sensitive assets face headwinds in the current debt cycle phase. Recovery expected as cycle turns.',
+      factors: [
+        { label: 'Debt cycle phase', value: 'Late-cycle pressure', favorable: false },
+        { label: 'Credit impulse (6m)', value: '-0.14', favorable: false },
+        { label: 'Liquidity condition', value: 'Tight (project finance)', favorable: false },
+        { label: 'Rate sensitivity', value: 'High (long-duration)', favorable: false },
+      ],
+    },
+    godleyView: {
+      sectorBalance: 'Private deficit / Gov surplus injection',
+      flowConsistency: 'fragile',
+      keyConstraint: 'Permitting bottleneck limits capex velocity',
+      summary: 'IRA subsidies create a direct government-to-private-sector flow. The permitting bottleneck limits the ability to convert financial capacity into real investment. Sectoral flow analysis shows fragility to any policy reversal.',
+      factors: [
+        { label: 'Corporate sector', value: 'Project finance deficit', favorable: null },
+        { label: 'Government sector', value: 'Surplus injection (IRA)', favorable: true },
+        { label: 'Flow constraint', value: 'Permitting & interconnect queue', favorable: false },
+        { label: 'Policy backstop', value: 'IRA intact — fragile if repealed', favorable: null },
+      ],
+    },
   },
   {
     id: 'deglobal',
@@ -205,6 +282,31 @@ const THEMES: Theme[] = [
       { label: 'Automation adoption lag vs labor cost', probability: 'medium', impact: 'medium', notes: 'Mexican labor economics still favorable; reshoring may slow' },
     ],
     convictionHistory: [72.1, 71.4, 71.2, 70.8, 71.3, 70.7, 70.4, 69.8, 70.2, 70.1, 69.6, 69.3, 68.7, 69.1, 69.2, 68.8, 68.4, 67.9, 68.3, 68.1, 67.8, 68.2, 69.0, 68.6, 68.4, 68.1, 68.3, 69.1, 68.7, 68.3],
+    forwardConviction12m: [67.9, 68.4, 69.0, 69.6, 69.2, 69.8, 70.3, 70.8, 70.4, 70.9, 71.3, 71.8],
+    dalioView: {
+      debtCyclePhase: 'Mid-cycle resilience',
+      creditImpulse: -0.07,
+      liquidityCondition: 'neutral',
+      summary: 'Neutral credit impulse and mid-cycle positioning support the Deglobalization thesis. Near-term tariff volatility introduces noise but structurally accelerates reshoring investment. Consistent with Dalio\'s late-globalization template.',
+      factors: [
+        { label: 'Debt cycle phase', value: 'Mid-cycle resilience', favorable: true },
+        { label: 'Credit impulse (6m)', value: '-0.07', favorable: null },
+        { label: 'Liquidity condition', value: 'Neutral', favorable: null },
+        { label: 'Trade cycle signal', value: 'Fragmentation accelerating', favorable: true },
+      ],
+    },
+    godleyView: {
+      sectorBalance: 'Domestic surplus / Foreign deficit',
+      flowConsistency: 'moderate',
+      keyConstraint: 'Tariff escalation pace vs reshoring speed',
+      summary: 'Nearshoring creates a domestic-sector surplus as manufacturing capex flows into Mexico and domestic facilities. The stock-flow transition is moderate: reshoring is structurally sound but adjustment takes 3–5 years.',
+      factors: [
+        { label: 'Domestic sector', value: 'Building surplus (reshoring)', favorable: true },
+        { label: 'Foreign sector', value: 'Losing investment flows', favorable: null },
+        { label: 'Capex stock build', value: 'Monterrey industrial: 4.7M sqft/qtr', favorable: true },
+        { label: 'Adjustment lag', value: '3–5 years (flow transition)', favorable: null },
+      ],
+    },
   },
   {
     id: 'space',
@@ -247,6 +349,31 @@ const THEMES: Theme[] = [
       { label: 'Starlink dominance forecloses downstream markets', probability: 'medium', impact: 'medium', notes: 'Broadband TAM crowding for ASTS and GSAT becoming clearer' },
     ],
     convictionHistory: [70.2, 71.1, 73.4, 72.8, 74.1, 73.6, 74.9, 74.3, 73.7, 74.2, 73.4, 72.9, 74.3, 75.1, 74.6, 73.8, 74.2, 75.0, 74.4, 73.9, 74.3, 74.1, 74.8, 74.2, 74.7, 74.3, 74.1, 74.4, 74.8, 74.6],
+    forwardConviction12m: [74.3, 74.8, 75.4, 75.9, 75.5, 76.1, 76.6, 76.2, 76.8, 77.3, 77.0, 77.6],
+    dalioView: {
+      debtCyclePhase: 'Early-expansion (sector)',
+      creditImpulse: 0.18,
+      liquidityCondition: 'neutral',
+      summary: 'Space economy is in an early-expansion phase within a structurally new market. Government anchor contracts insulate from credit cycle volatility. Positive credit impulse supports emerging operator balance sheets.',
+      factors: [
+        { label: 'Debt cycle phase', value: 'Early-expansion (sector)', favorable: true },
+        { label: 'Credit impulse (6m)', value: '+0.18', favorable: true },
+        { label: 'Liquidity condition', value: 'Neutral', favorable: null },
+        { label: 'Government backstop', value: 'DoD contracts $341M active', favorable: true },
+      ],
+    },
+    godleyView: {
+      sectorBalance: 'Government deficit funds private',
+      flowConsistency: 'moderate',
+      keyConstraint: 'Spectrum allocation regulatory decision',
+      summary: 'Government anchor contracts create a reliable income flow for emerging space operators. The single-point regulatory constraint (FCC spectrum) represents a fragile stock-flow dependency. Resolution in 90 days would materially improve flow consistency.',
+      factors: [
+        { label: 'Government sector', value: 'Active deficit (DoD contracts)', favorable: true },
+        { label: 'Private sector', value: 'Nascent surplus-builder', favorable: true },
+        { label: 'Regulatory flow', value: 'FCC spectrum — 90d dependency', favorable: false },
+        { label: 'Launch cost stock', value: 'Declining 20%/yr (structural)', favorable: true },
+      ],
+    },
   },
   {
     id: 'longevity',
@@ -290,6 +417,31 @@ const THEMES: Theme[] = [
       { label: 'Biosimilar entry accelerates pricing pressure', probability: 'medium', impact: 'medium', notes: '2028+ timeline but pipeline visibility matters for multiples now' },
     ],
     convictionHistory: [75.4, 76.1, 76.4, 77.2, 78.1, 77.6, 78.3, 79.1, 78.7, 79.2, 79.4, 80.1, 79.8, 80.3, 80.7, 81.1, 80.8, 80.4, 80.9, 80.6, 81.1, 81.0, 81.2, 81.0, 81.1, 80.9, 81.2, 81.3, 81.1, 81.2],
+    forwardConviction12m: [81.7, 82.3, 83.0, 82.6, 83.3, 83.9, 84.5, 84.2, 84.8, 85.3, 85.0, 85.6],
+    dalioView: {
+      debtCyclePhase: 'Mid-expansion',
+      creditImpulse: 0.24,
+      liquidityCondition: 'neutral',
+      summary: 'Mid-expansion debt cycle and positive credit impulse support biotech investment. FDA acceleration programs and CMS coverage expansion represent regulatory credit easing. GLP-1 structural demand is credit-cycle agnostic.',
+      factors: [
+        { label: 'Debt cycle phase', value: 'Mid-expansion', favorable: true },
+        { label: 'Credit impulse (6m)', value: '+0.24', favorable: true },
+        { label: 'Liquidity condition', value: 'Neutral', favorable: null },
+        { label: 'Regulatory credit', value: 'FDA BTD pipeline accelerating', favorable: true },
+      ],
+    },
+    godleyView: {
+      sectorBalance: 'Corporate R&D deficit / Insurance surplus',
+      flowConsistency: 'strong',
+      keyConstraint: 'Payer coverage expansion pace',
+      summary: 'Pharmaceutical investment is financed by strong corporate cash flows and insurance premium surpluses. The payer (Medicare/insurance) sector holds the key stock-flow constraint: coverage expansion converts clinical evidence into durable revenue streams.',
+      factors: [
+        { label: 'Corporate sector', value: 'R&D-intensive deficit', favorable: true },
+        { label: 'Payer sector', value: 'Surplus — CMS decision pending', favorable: null },
+        { label: 'Patient flow', value: 'GLP-1 demand credit-agnostic', favorable: true },
+        { label: 'Pipeline stock', value: 'BTD designations accelerating', favorable: true },
+      ],
+    },
   },
   {
     id: 'defense',
@@ -334,6 +486,31 @@ const THEMES: Theme[] = [
       { label: 'Geopolitical de-escalation reducing urgency', probability: 'low', impact: 'medium', notes: 'Structural NATO commitment partially insulates from this scenario' },
     ],
     convictionHistory: [76.3, 77.1, 77.4, 78.2, 77.8, 78.3, 79.1, 78.7, 79.2, 79.1, 78.6, 79.2, 79.3, 79.1, 79.8, 79.4, 79.1, 79.3, 79.2, 79.1, 79.4, 80.1, 79.7, 79.3, 79.2, 79.1, 79.4, 79.6, 79.3, 79.3],
+    forwardConviction12m: [79.7, 80.3, 80.8, 80.4, 81.0, 81.5, 81.2, 81.8, 82.3, 82.0, 82.6, 83.1],
+    dalioView: {
+      debtCyclePhase: 'Late-cycle / structural expansion',
+      creditImpulse: 0.12,
+      liquidityCondition: 'neutral',
+      summary: 'NATO structural commitment creates a multi-decade investment thesis that transcends normal debt cycle dynamics. Government spending backstops defense revenues regardless of credit conditions. Mild positive credit impulse supports prime contractor working capital.',
+      factors: [
+        { label: 'Debt cycle phase', value: 'Late-cycle / structural', favorable: true },
+        { label: 'Credit impulse (6m)', value: '+0.12', favorable: true },
+        { label: 'Liquidity condition', value: 'Neutral', favorable: null },
+        { label: 'Government spending', value: '$180B/yr NATO increment', favorable: true },
+      ],
+    },
+    godleyView: {
+      sectorBalance: 'Government deficit → private surplus',
+      flowConsistency: 'strong',
+      keyConstraint: 'Rare-earth supply chain concentration',
+      summary: 'Government defense spending creates a direct, persistent flow to the private defense sector. NATO commitment formalizes a multi-year government deficit that funds private sector surpluses. Stock-flow analysis is strong; rare-earth supply chain is the key stock vulnerability.',
+      factors: [
+        { label: 'Government sector', value: 'Structural deficit (NATO 2.5%)', favorable: true },
+        { label: 'Defense sector', value: 'Surplus-building (backlog $4.2T)', favorable: true },
+        { label: 'Supply chain stock', value: 'Rare-earth concentration risk', favorable: false },
+        { label: 'Contract flow', value: 'Multi-year FMS agreements', favorable: true },
+      ],
+    },
   },
 ]
 
@@ -364,6 +541,8 @@ const IMPACT_BADGE: Record<RiskLevel, string> = {
   low: 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-500',
 }
 
+const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
 // ─── Mini sparkline ───────────────────────────────────────────────────────────
 
 const MiniSparkline = memo(function MiniSparkline({
@@ -393,10 +572,12 @@ const ConvictionChart = memo(function ConvictionChart({
   data,
   color,
   themeId,
+  dashed,
 }: {
   data: number[]
   color: string
   themeId: string
+  dashed?: boolean
 }) {
   const W = 800, H = 80
   const min = Math.min(...data) - 2
@@ -408,7 +589,7 @@ const ConvictionChart = memo(function ConvictionChart({
   }))
   const line = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')
   const area = `${line} L ${W} ${H} L 0 ${H} Z`
-  const gradId = `cg-${themeId}`
+  const gradId = `cg-${themeId}${dashed ? '-fwd' : ''}`
 
   return (
     <svg
@@ -419,12 +600,20 @@ const ConvictionChart = memo(function ConvictionChart({
     >
       <defs>
         <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.22" />
+          <stop offset="0%" stopColor={color} stopOpacity={dashed ? '0.12' : '0.22'} />
           <stop offset="100%" stopColor={color} stopOpacity="0.02" />
         </linearGradient>
       </defs>
       <path d={area} fill={`url(#${gradId})`} />
-      <path d={line} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d={line}
+        fill="none"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeDasharray={dashed ? '6 3' : undefined}
+      />
       <circle cx={pts[pts.length - 1].x} cy={pts[pts.length - 1].y} r="3" fill={color} />
     </svg>
   )
@@ -507,7 +696,7 @@ const HoldingsSection = memo(function HoldingsSection({
                   style={{ backgroundColor: color, originX: 0 }}
                   initial={{ scaleX: 0 }}
                   animate={{ scaleX: h.weight / maxWeight }}
-                  transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+                  transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] as const }}
                 />
               </div>
               <span className="font-mono text-[11px] text-zinc-500 dark:text-zinc-500 w-10 text-right flex-shrink-0">
@@ -545,16 +734,192 @@ const HoldingsSection = memo(function HoldingsSection({
   )
 })
 
+// ─── Framework tabs ───────────────────────────────────────────────────────────
+
+function FrameworkTabs({
+  active,
+  onChange,
+}: {
+  active: FrameworkType
+  onChange: (f: FrameworkType) => void
+}) {
+  return (
+    <div className="flex items-center rounded-md overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900">
+      {(['sa', 'dalio', 'godley'] as FrameworkType[]).map((f) => (
+        <button
+          key={f}
+          onClick={() => onChange(f)}
+          className={`px-3 py-1 text-[11px] font-mono font-semibold uppercase tracking-wide transition-colors ${
+            active === f
+              ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
+              : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-500 dark:hover:text-zinc-300'
+          }`}
+        >
+          {f === 'sa' ? 'SA' : f === 'dalio' ? 'Dalio' : 'Godley'}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+// ─── Horizon toggle ───────────────────────────────────────────────────────────
+
+function HorizonToggle({
+  active,
+  onChange,
+}: {
+  active: HorizonType
+  onChange: (h: HorizonType) => void
+}) {
+  return (
+    <div className="flex items-center rounded overflow-hidden border border-zinc-200 dark:border-zinc-800">
+      {(['historical', 'forward'] as HorizonType[]).map((h) => (
+        <button
+          key={h}
+          onClick={() => onChange(h)}
+          className={`px-2 py-0.5 font-mono text-[10px] transition-colors ${
+            active === h
+              ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
+              : 'text-zinc-400 hover:text-zinc-600 dark:text-zinc-600 dark:hover:text-zinc-400'
+          }`}
+        >
+          {h === 'historical' ? '30d' : '12M'}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+// ─── Dalio section ────────────────────────────────────────────────────────────
+
+function DalioSection({ view }: { view: DalioView }) {
+  return (
+    <div className="px-6 py-5 border-b border-zinc-200 dark:border-zinc-800">
+      <div className="flex items-center gap-2 mb-3">
+        <p className="text-[10px] font-semibold tracking-wide text-zinc-500 dark:text-zinc-400">
+          Dalio Framework — Debt Cycle Analysis
+        </p>
+        <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400">
+          {view.debtCyclePhase}
+        </span>
+      </div>
+      <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed mb-4 max-w-3xl">
+        {view.summary}
+      </p>
+      <div className="grid grid-cols-2 gap-px bg-zinc-200 dark:bg-zinc-800 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-800">
+        {view.factors.map((f) => (
+          <div key={f.label} className="bg-white dark:bg-zinc-900 px-3 py-2.5">
+            <p className="text-[10px] text-zinc-500 mb-0.5">{f.label}</p>
+            <div className="flex items-center gap-1.5">
+              <span className="font-mono text-sm font-semibold text-zinc-900 dark:text-zinc-100">{f.value}</span>
+              {f.favorable === true && <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 flex-shrink-0" />}
+              {f.favorable === false && <span className="h-1.5 w-1.5 rounded-full bg-rose-500 flex-shrink-0" />}
+              {f.favorable === null && <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 flex-shrink-0" />}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="flex items-center gap-4 mt-3 font-mono text-[10px] text-zinc-400 dark:text-zinc-600">
+        <span className="flex items-center gap-1">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />Favorable
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />Unfavorable
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="h-1.5 w-1.5 rounded-full bg-zinc-400" />Neutral
+        </span>
+      </div>
+    </div>
+  )
+}
+
+// ─── Godley section ───────────────────────────────────────────────────────────
+
+const FLOW_CONSISTENCY_BADGE: Record<GodleyView['flowConsistency'], string> = {
+  strong: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+  moderate: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+  fragile: 'bg-rose-500/10 text-rose-600 dark:text-rose-400',
+}
+
+function GodleySection({ view }: { view: GodleyView }) {
+  return (
+    <div className="px-6 py-5 border-b border-zinc-200 dark:border-zinc-800">
+      <div className="flex items-center gap-2 mb-3 flex-wrap">
+        <p className="text-[10px] font-semibold tracking-wide text-zinc-500 dark:text-zinc-400">
+          Godley Framework — Sectoral Balances
+        </p>
+        <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-violet-500/10 text-violet-600 dark:text-violet-400">
+          {view.sectorBalance}
+        </span>
+        <span className={`font-mono text-[10px] px-1.5 py-0.5 rounded ${FLOW_CONSISTENCY_BADGE[view.flowConsistency]}`}>
+          {view.flowConsistency} flow
+        </span>
+      </div>
+      <div className="flex items-start gap-2 mb-3">
+        <div className="flex-shrink-0 mt-0.5">
+          <span className="font-mono text-[10px] text-zinc-400 dark:text-zinc-600">Constraint:</span>
+        </div>
+        <span className="font-mono text-[10px] text-zinc-600 dark:text-zinc-400">{view.keyConstraint}</span>
+      </div>
+      <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed mb-4 max-w-3xl">
+        {view.summary}
+      </p>
+      <div className="grid grid-cols-2 gap-px bg-zinc-200 dark:bg-zinc-800 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-800">
+        {view.factors.map((f) => (
+          <div key={f.label} className="bg-white dark:bg-zinc-900 px-3 py-2.5">
+            <p className="text-[10px] text-zinc-500 mb-0.5">{f.label}</p>
+            <div className="flex items-center gap-1.5">
+              <span className="font-mono text-sm font-semibold text-zinc-900 dark:text-zinc-100">{f.value}</span>
+              {f.favorable === true && <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 flex-shrink-0" />}
+              {f.favorable === false && <span className="h-1.5 w-1.5 rounded-full bg-rose-500 flex-shrink-0" />}
+              {f.favorable === null && <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 flex-shrink-0" />}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="flex items-center gap-4 mt-3 font-mono text-[10px] text-zinc-400 dark:text-zinc-600">
+        <span className="flex items-center gap-1">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />Favorable
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />Unfavorable
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="h-1.5 w-1.5 rounded-full bg-zinc-400" />Neutral
+        </span>
+      </div>
+    </div>
+  )
+}
+
 // ─── Theme detail body ────────────────────────────────────────────────────────
 
-function ThemeDetail({ theme, color }: { theme: Theme; color: string }) {
+function ThemeDetail({
+  theme,
+  color,
+  framework,
+  horizon,
+  onHorizonChange,
+}: {
+  theme: Theme
+  color: string
+  framework: FrameworkType
+  horizon: HorizonType
+  onHorizonChange: (h: HorizonType) => void
+}) {
+  const chartData = horizon === 'historical' ? theme.convictionHistory : theme.forwardConviction12m
+  const chartLabel = horizon === 'historical' ? '30-Day History' : '12M Forward'
+  const chartHigh = Math.max(...chartData).toFixed(1)
+  const chartLow = Math.min(...chartData).toFixed(1)
+
   return (
     <motion.div
       key={theme.id}
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -6 }}
-      transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] as const }}
     >
       {/* ── Section 1: Conviction strip ── */}
       <div className="grid grid-cols-[5fr_4fr] border-b border-zinc-200 dark:border-zinc-800">
@@ -602,50 +967,73 @@ function ThemeDetail({ theme, color }: { theme: Theme; color: string }) {
         {/* Conviction chart */}
         <div className="px-6 py-5">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-[10px] font-semibold tracking-wide text-zinc-500 dark:text-zinc-400">
-              30-Day History
-            </p>
+            <div className="flex items-center gap-2">
+              <p className="text-[10px] font-semibold tracking-wide text-zinc-500 dark:text-zinc-400">
+                {chartLabel}
+              </p>
+              <HorizonToggle active={horizon} onChange={onHorizonChange} />
+            </div>
             <div className="flex items-center gap-3 font-mono text-[10px] text-zinc-400 dark:text-zinc-600">
-              <span>H {Math.max(...theme.convictionHistory).toFixed(1)}</span>
-              <span>L {Math.min(...theme.convictionHistory).toFixed(1)}</span>
+              <span>H {chartHigh}</span>
+              <span>L {chartLow}</span>
             </div>
           </div>
-          <ConvictionChart data={theme.convictionHistory} color={color} themeId={theme.id} />
+          <ConvictionChart
+            data={chartData}
+            color={color}
+            themeId={theme.id}
+            dashed={horizon === 'forward'}
+          />
+          {horizon === 'forward' && (
+            <div className="flex justify-between mt-1 px-0.5">
+              {MONTH_LABELS.map((m) => (
+                <span key={m} className="font-mono text-[9px] text-zinc-400 dark:text-zinc-700">
+                  {m}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* ── Section 2: Thesis + Assumptions ── */}
-      <div className="px-6 py-5 border-b border-zinc-200 dark:border-zinc-800">
-        <p className="text-[10px] font-semibold tracking-wide text-zinc-500 dark:text-zinc-400 mb-2">
-          Investment Thesis
-        </p>
-        <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed mb-4 max-w-3xl">
-          {theme.thesis}
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {theme.assumptions.map((a, i) => {
-            const isHolding = a.status === 'holding'
-            const isAtRisk = a.status === 'at-risk'
-            const Icon = isHolding ? CheckCircle : isAtRisk ? Warning : XCircle
-            const iconCls = isHolding
-              ? 'text-emerald-500'
-              : isAtRisk
-              ? 'text-amber-500'
-              : 'text-rose-500'
-            const chipCls = isHolding
-              ? 'border-emerald-200 dark:border-emerald-900/60 bg-emerald-50 dark:bg-emerald-900/20'
-              : isAtRisk
-              ? 'border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-900/20'
-              : 'border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-900/20'
-            return (
-              <div key={i} className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 ${chipCls}`}>
-                <Icon size={12} weight="fill" className={iconCls} />
-                <span className="text-xs text-zinc-700 dark:text-zinc-300">{a.label}</span>
-              </div>
-            )
-          })}
+      {/* ── Section 2: Thesis / Framework view ── */}
+      {framework === 'sa' && (
+        <div className="px-6 py-5 border-b border-zinc-200 dark:border-zinc-800">
+          <p className="text-[10px] font-semibold tracking-wide text-zinc-500 dark:text-zinc-400 mb-2">
+            Investment Thesis
+          </p>
+          <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed mb-4 max-w-3xl">
+            {theme.thesis}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {theme.assumptions.map((a, i) => {
+              const isHolding = a.status === 'holding'
+              const isAtRisk = a.status === 'at-risk'
+              const Icon = isHolding ? CheckCircle : isAtRisk ? Warning : XCircle
+              const iconCls = isHolding
+                ? 'text-emerald-500'
+                : isAtRisk
+                ? 'text-amber-500'
+                : 'text-rose-500'
+              const chipCls = isHolding
+                ? 'border-emerald-200 dark:border-emerald-900/60 bg-emerald-50 dark:bg-emerald-900/20'
+                : isAtRisk
+                ? 'border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-900/20'
+                : 'border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-900/20'
+              return (
+                <div key={i} className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 ${chipCls}`}>
+                  <Icon size={12} weight="fill" className={iconCls} />
+                  <span className="text-xs text-zinc-700 dark:text-zinc-300">{a.label}</span>
+                </div>
+              )
+            })}
+          </div>
         </div>
-      </div>
+      )}
+
+      {framework === 'dalio' && <DalioSection view={theme.dalioView} />}
+
+      {framework === 'godley' && <GodleySection view={theme.godleyView} />}
 
       {/* ── Section 3: Holdings ── */}
       <HoldingsSection holdings={theme.holdings} color={color} />
@@ -743,6 +1131,8 @@ function ThemeDetail({ theme, color }: { theme: Theme; color: string }) {
 export default function ThemesClient() {
   const searchParams = useSearchParams()
   const [selectedId, setSelectedId] = useState(THEMES[0].id)
+  const [framework, setFramework] = useState<FrameworkType>('sa')
+  const [horizon, setHorizon] = useState<HorizonType>('historical')
 
   useEffect(() => {
     const param = searchParams.get('theme')
@@ -831,6 +1221,7 @@ export default function ThemesClient() {
             </span>
           </div>
           <div className="flex items-center gap-3">
+            <FrameworkTabs active={framework} onChange={setFramework} />
             <LiveClock />
             <ThemeToggle />
           </div>
@@ -839,7 +1230,14 @@ export default function ThemesClient() {
         {/* Scrollable body */}
         <div className="flex-1 overflow-y-auto">
           <AnimatePresence mode="wait">
-            <ThemeDetail key={selectedId} theme={selectedTheme} color={color} />
+            <ThemeDetail
+              key={selectedId}
+              theme={selectedTheme}
+              color={color}
+              framework={framework}
+              horizon={horizon}
+              onHorizonChange={setHorizon}
+            />
           </AnimatePresence>
         </div>
       </div>
