@@ -50,6 +50,11 @@ interface PendingInsight {
   submittedAt: string
 }
 
+interface ActionItem {
+  text: string
+  trend: 'overnight-spike' | 'building' | 'resolved'
+}
+
 // ─── Mock Data ────────────────────────────────────────────────────────────────
 
 const RUN_META = {
@@ -60,9 +65,9 @@ const RUN_META = {
   positionsAffected: 2,
 }
 
-const ACTIONS: string[] = [
-  'Review NVDA — KILL signal triggered at 06:14 UTC',
-  'Confirm USTR / WTO feed reconnection (offline 3h 17m)',
+const ACTIONS: ActionItem[] = [
+  { text: 'Review NVDA — KILL signal triggered at 06:14 UTC', trend: 'overnight-spike' },
+  { text: 'Confirm USTR / WTO feed reconnection (offline 3h 17m)', trend: 'building' },
 ]
 
 const POSITION_SIGNALS: PositionSignal[] = [
@@ -328,6 +333,41 @@ const InsightRow = memo(function InsightRow({
   )
 })
 
+const TREND_LABELS: Record<ActionItem['trend'], string> = {
+  'overnight-spike': 'Overnight spike',
+  'building':        'Building',
+  'resolved':        'Resolved',
+}
+
+function PipelineStatusBar() {
+  const ranCount = THEME_RUNS.filter((r) => r.status !== 'offline').length
+  const total = THEME_RUNS.length
+  const hasIssues = THEME_RUNS.some((r) => r.status === 'breach' || r.status === 'offline' || r.status === 'delayed')
+  return (
+    <div
+      data-testid="pipeline-status-bar"
+      className={`flex items-center gap-3 rounded-lg border px-4 py-2.5 ${hasIssues ? 'border-amber-200/60 bg-amber-50/50 dark:border-amber-500/15 dark:bg-amber-500/5' : 'border-emerald-200/60 bg-emerald-50/40 dark:border-emerald-500/15 dark:bg-emerald-500/5'}`}
+    >
+      <span className={`flex-shrink-0 h-1.5 w-1.5 rounded-full ${hasIssues ? 'bg-amber-400' : 'bg-emerald-500'}`} />
+      <span className="font-mono text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">
+        {ranCount}/{total} THEMES RAN
+      </span>
+      <span className="text-zinc-300 dark:text-zinc-700">·</span>
+      <span className="font-mono text-[11px] text-zinc-500 dark:text-zinc-400">
+        Last run {RUN_META.completedAt}
+      </span>
+      {hasIssues && (
+        <>
+          <span className="text-zinc-300 dark:text-zinc-700">·</span>
+          <span className="font-mono text-[11px] text-amber-600 dark:text-amber-400">
+            {THEME_RUNS.filter((r) => r.status === 'breach' || r.status === 'offline' || r.status === 'delayed').length} issues
+          </span>
+        </>
+      )}
+    </div>
+  )
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function OverviewClient() {
@@ -372,9 +412,12 @@ export default function OverviewClient() {
         ) : (
           <div className="space-y-6 p-6">
 
+            <PipelineStatusBar />
+
             {/* ── Action required ── */}
             {ACTIONS.length > 0 && (
               <motion.div
+                data-testid="action-required"
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
@@ -385,9 +428,12 @@ export default function OverviewClient() {
                 </p>
                 <ul className="space-y-2">
                   {ACTIONS.map((action) => (
-                    <li key={action} className="flex items-start gap-2">
+                    <li key={action.text} className="flex items-start gap-2">
                       <ArrowRight size={11} weight="bold" className="mt-[3px] flex-shrink-0 text-blue-500" />
-                      <span className="text-xs leading-relaxed text-zinc-700 dark:text-zinc-300">{action}</span>
+                      <span className="text-xs leading-relaxed text-zinc-700 dark:text-zinc-300">{action.text}</span>
+                      <span data-testid="trend-tag" className="ml-auto flex-shrink-0 rounded px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-wide bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+                        {TREND_LABELS[action.trend]}
+                      </span>
                     </li>
                   ))}
                 </ul>

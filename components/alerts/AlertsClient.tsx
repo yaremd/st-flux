@@ -48,6 +48,7 @@ interface Alert {
   title: string
   summary: string
   context: string
+  signalContext?: string
   timestamp: string
   dateGroup: 'Today' | 'Yesterday'
   theme: string
@@ -71,6 +72,7 @@ const MOCK_ALERTS: Alert[] = [
     summary: 'NVDA forward capex guidance widened 2.3σ above consensus in after-hours update.',
     context:
       'Three hyperscaler earnings calls in the past 72h referenced unexpected GPU allocation shortfalls, suggesting supply-demand imbalance is accelerating faster than the theme model anticipated. The divergence has crossed the 2.0σ threshold that historically precedes position review.',
+    signalContext: 'Crosses 2.0σ threshold · Highest reading in 30 days',
     timestamp: new Date(NOW - 14 * 60000).toISOString(),
     dateGroup: 'Today',
     theme: 'AI Infrastructure',
@@ -463,6 +465,8 @@ const ACK_DOT: Record<AckState, string> = {
   acted: 'bg-emerald-500',
 }
 
+const SEVERITY_ORDER: Record<Severity, number> = { critical: 0, warning: 1, info: 2 }
+
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 const SeverityBadge = memo(function SeverityBadge({ severity }: { severity: Severity }) {
@@ -517,6 +521,7 @@ const AlertRow = memo(function AlertRow({
 }) {
   return (
     <button
+      data-severity={alert.severity}
       onClick={() => onSelect(alert.id)}
       className={[
         'w-full text-left px-4 py-3.5 border-l-2 transition-colors duration-150',
@@ -562,10 +567,12 @@ const DetailPanel = memo(function DetailPanel({
   alert,
   onAck,
   onClose,
+  ackedAt,
 }: {
   alert: Alert | null
   onAck: (id: string, state: AckState) => void
   onClose: () => void
+  ackedAt?: string
 }) {
   if (!alert) return null
 
@@ -618,6 +625,15 @@ const DetailPanel = memo(function DetailPanel({
               {alert.context}
             </p>
           </div>
+
+          {alert.signalContext && (
+            <p
+              data-testid="signal-context"
+              className="rounded-md bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/50 px-3 py-2 font-mono text-[11px] text-zinc-500 dark:text-zinc-400"
+            >
+              {alert.signalContext}
+            </p>
+          )}
 
           <div>
             <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-600 mb-2">
@@ -724,13 +740,21 @@ const DetailPanel = memo(function DetailPanel({
             </>
           )}
           {alert.ack === 'acted' && (
-            <button
-              onClick={() => onAck(alert.id, 'acknowledged')}
-              className="flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 dark:text-zinc-400 transition-colors"
-            >
-              <ArrowCounterClockwise size={13} />
-              Undo
-            </button>
+            <>
+              <span
+                data-testid="acted-timestamp"
+                className="font-mono text-[10px] text-emerald-600 dark:text-emerald-400"
+              >
+                Acted · Logged {ackedAt ?? '—'}
+              </span>
+              <button
+                onClick={() => onAck(alert.id, 'acknowledged')}
+                className="flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 dark:text-zinc-400 transition-colors"
+              >
+                <ArrowCounterClockwise size={13} />
+                Undo
+              </button>
+            </>
           )}
           <div className="flex-1" />
           <span
@@ -828,6 +852,7 @@ export default function AlertsClient() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [filter, setFilter] = useState<FilterKey>('action')
   const [search, setSearch] = useState('')
+  const [ackedAtMap, setAckedAtMap] = useState<Record<string, string>>({})
 
   const panelOpen = selectedId !== null
 
@@ -873,6 +898,9 @@ export default function AlertsClient() {
       if (!map.has(a.dateGroup)) map.set(a.dateGroup, [])
       map.get(a.dateGroup)!.push(a)
     }
+    for (const [key, list] of map) {
+      map.set(key, [...list].sort((a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]))
+    }
     return map
   }, [filtered])
 
@@ -882,6 +910,10 @@ export default function AlertsClient() {
 
   const handleAck = useCallback((id: string, state: AckState) => {
     setAlerts((prev) => prev.map((a) => (a.id === id ? { ...a, ack: state } : a)))
+    if (state === 'acted') {
+      const ts = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' }) + ' UTC'
+      setAckedAtMap((prev) => ({ ...prev, [id]: ts }))
+    }
   }, [])
 
   const handleClose = useCallback(() => setSelectedId(null), [])
@@ -947,7 +979,7 @@ export default function AlertsClient() {
             </div>
           ) : (
             Array.from(grouped.entries()).map(([group, groupAlerts]) => (
-              <div key={group}>
+              <div key={group} data-group={group}>
                 <div className="sticky top-0 z-10 flex items-center gap-2.5 px-4 py-2 bg-zinc-50/90 dark:bg-zinc-900/90 backdrop-blur-sm border-b border-zinc-100 dark:border-zinc-800">
                   <Clock size={11} className="text-zinc-400 dark:text-zinc-600" />
                   <span className="text-[10px] font-semibold tracking-wide text-zinc-500 dark:text-zinc-400">
@@ -976,7 +1008,7 @@ export default function AlertsClient() {
           style={{ width: panelOpen ? 420 : 0 }}
         >
           <div style={{ width: 420 }} className="h-full">
-            <DetailPanel alert={selectedAlert} onAck={handleAck} onClose={handleClose} />
+            <DetailPanel alert={selectedAlert} onAck={handleAck} onClose={handleClose} ackedAt={selectedAlert ? ackedAtMap[selectedAlert.id] : undefined} />
           </div>
         </div>
       </div>
