@@ -342,7 +342,8 @@ const TREND_LABELS: Record<ActionItem['trend'], string> = {
 function PipelineStatusBar() {
   const ranCount = THEME_RUNS.filter((r) => r.status !== 'offline').length
   const total = THEME_RUNS.length
-  const hasIssues = THEME_RUNS.some((r) => r.status === 'breach' || r.status === 'offline' || r.status === 'delayed')
+  const issues = THEME_RUNS.filter((r) => r.status === 'breach' || r.status === 'offline' || r.status === 'delayed')
+  const hasIssues = issues.length > 0
   return (
     <div
       data-testid="pipeline-status-bar"
@@ -360,7 +361,7 @@ function PipelineStatusBar() {
         <>
           <span className="text-zinc-300 dark:text-zinc-700">·</span>
           <span className="font-mono text-[11px] text-amber-600 dark:text-amber-400">
-            {THEME_RUNS.filter((r) => r.status === 'breach' || r.status === 'offline' || r.status === 'delayed').length} issues
+            {issues.length} issues
           </span>
         </>
       )}

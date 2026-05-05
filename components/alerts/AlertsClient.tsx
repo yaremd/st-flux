@@ -676,8 +676,8 @@ const DetailPanel = memo(function DetailPanel({
             </p>
             <div className="relative pl-5">
               <div className="absolute left-[7px] top-1.5 bottom-1.5 w-px bg-zinc-200 dark:bg-zinc-800" />
-              {alert.timeline.map((t, i) => (
-                <div key={i} className="relative mb-3 last:mb-0">
+              {alert.timeline.map((t) => (
+                <div key={t.time + t.event} className="relative mb-3 last:mb-0">
                   <div className="absolute -left-5 top-0.5 h-3 w-3 rounded-full border-2 border-white dark:border-zinc-950 bg-zinc-300 dark:bg-zinc-700" />
                   <p className="font-mono text-[10px] text-zinc-400 dark:text-zinc-600 mb-0.5">
                     {t.time}
@@ -889,7 +889,7 @@ export default function AlertsClient() {
           a.securities.some((s) => s.toLowerCase().includes(q))
       )
     }
-    return list
+    return [...list].sort((a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity])
   }, [alerts, filter, search])
 
   const grouped = useMemo(() => {
@@ -897,9 +897,6 @@ export default function AlertsClient() {
     for (const a of filtered) {
       if (!map.has(a.dateGroup)) map.set(a.dateGroup, [])
       map.get(a.dateGroup)!.push(a)
-    }
-    for (const [key, list] of map) {
-      map.set(key, [...list].sort((a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]))
     }
     return map
   }, [filtered])
