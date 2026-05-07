@@ -6,10 +6,11 @@ import {
   Database,
   Gear,
   User,
+  House,
 } from "@phosphor-icons/react/dist/ssr";
 
 const PRIMARY_NAV = [
-  { label: "Morning Brief", icon: SunHorizon, href: "/" },
+  { label: "Morning Brief", icon: SunHorizon, href: "/dashboard/st-flux" },
   { label: "Positions", icon: Crosshair, href: "/positions", badge: 2 },
   { label: "Alerts", icon: Bell, href: "/alerts", badge: 3 },
 ];
@@ -28,6 +29,17 @@ export default function Sidebar({ activePath = "/" }: { activePath?: string }) {
           STELLAR
           <span className="text-blue-500">FLUX</span>
         </span>
+      </div>
+
+      {/* Home link */}
+      <div className="px-3 pt-3">
+        <a
+          href="/"
+          className="group flex items-center gap-3 rounded-md px-3 py-2 text-xs font-medium text-zinc-400 hover:bg-zinc-50 hover:text-zinc-600 transition-colors duration-150 dark:hover:bg-zinc-900 dark:hover:text-zinc-300"
+        >
+          <House size={14} className="text-zinc-300 group-hover:text-zinc-500 dark:text-zinc-700 dark:group-hover:text-zinc-500" />
+          <span>Cockpit</span>
+        </a>
       </div>
 
       {/* Primary nav */}

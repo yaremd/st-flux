@@ -10,7 +10,8 @@ import {
   TrendUp,
   TrendDown,
 } from '@phosphor-icons/react'
-import ThemeToggle from '@/components/ThemeToggle'
+import StellarHeader from '@/components/StellarHeader'
+import Link from 'next/link'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -57,7 +58,7 @@ interface Assumption {
 interface FrameworkFactor {
   label: string
   value: string
-  favorable: boolean | null // null = neutral
+  favorable: boolean | null
 }
 
 interface DalioView {
@@ -149,7 +150,7 @@ const THEMES: Theme[] = [
       debtCyclePhase: 'Mid-expansion',
       creditImpulse: 0.31,
       liquidityCondition: 'loose',
-      summary: 'Mid-expansion debt cycle strongly supports hyperscaler capex. Positive credit impulse and loose large-cap liquidity sustain the AI infrastructure build-out. Consistent with Dalio\'s template for late technology adoption phases.',
+      summary: "Mid-expansion debt cycle strongly supports hyperscaler capex. Positive credit impulse and loose large-cap liquidity sustain the AI infrastructure build-out. Consistent with Dalio's template for late technology adoption phases.",
       factors: [
         { label: 'Debt cycle phase', value: 'Mid-expansion', favorable: true },
         { label: 'Credit impulse (6m)', value: '+0.31', favorable: true },
@@ -287,7 +288,7 @@ const THEMES: Theme[] = [
       debtCyclePhase: 'Mid-cycle resilience',
       creditImpulse: -0.07,
       liquidityCondition: 'neutral',
-      summary: 'Neutral credit impulse and mid-cycle positioning support the Deglobalization thesis. Near-term tariff volatility introduces noise but structurally accelerates reshoring investment. Consistent with Dalio\'s late-globalization template.',
+      summary: "Neutral credit impulse and mid-cycle positioning support the Deglobalization thesis. Near-term tariff volatility introduces noise but structurally accelerates reshoring investment. Consistent with Dalio's late-globalization template.",
       factors: [
         { label: 'Debt cycle phase', value: 'Mid-cycle resilience', favorable: true },
         { label: 'Credit impulse (6m)', value: '-0.07', favorable: null },
@@ -517,41 +518,35 @@ const THEMES: Theme[] = [
 // ─── Style maps ───────────────────────────────────────────────────────────────
 
 const STATUS_STYLES: Record<ConvictionStatus, { badge: string; label: string }> = {
-  strong: { badge: 'bg-emerald-500/15 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400', label: 'strong' },
-  moderate: { badge: 'bg-blue-500/15 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400', label: 'moderate' },
-  watch: { badge: 'bg-amber-500/15 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400', label: 'watch' },
-  review: { badge: 'bg-rose-500/15 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400', label: 'review' },
+  strong: { badge: 'bg-emerald-500/20 text-emerald-400', label: 'strong' },
+  moderate: { badge: 'bg-blue-500/20 text-blue-400', label: 'moderate' },
+  watch: { badge: 'bg-amber-500/20 text-amber-400', label: 'watch' },
+  review: { badge: 'bg-rose-500/20 text-rose-400', label: 'review' },
 }
 
 const SIGNAL_DOT: Record<SignalType, string> = {
   positive: 'bg-emerald-500',
   negative: 'bg-rose-500',
-  neutral: 'bg-zinc-400 dark:bg-zinc-600',
+  neutral: 'bg-white/30',
 }
 
 const RISK_COLOR: Record<RiskLevel, string> = {
-  high: 'text-rose-600 dark:text-rose-400',
-  medium: 'text-amber-600 dark:text-amber-400',
-  low: 'text-emerald-600 dark:text-emerald-400',
+  high: 'text-rose-400',
+  medium: 'text-amber-400',
+  low: 'text-emerald-400',
 }
 
 const IMPACT_BADGE: Record<RiskLevel, string> = {
-  high: 'bg-rose-500/10 text-rose-600 dark:text-rose-400',
-  medium: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
-  low: 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-500',
+  high: 'bg-rose-500/10 text-rose-400',
+  medium: 'bg-amber-500/10 text-amber-400',
+  low: 'bg-white/[0.06] text-white/40',
 }
 
 const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 // ─── Mini sparkline ───────────────────────────────────────────────────────────
 
-const MiniSparkline = memo(function MiniSparkline({
-  data,
-  color,
-}: {
-  data: number[]
-  color: string
-}) {
+const MiniSparkline = memo(function MiniSparkline({ data, color }: { data: number[]; color: string }) {
   const W = 60, H = 20
   const min = Math.min(...data)
   const max = Math.max(...data)
@@ -569,35 +564,20 @@ const MiniSparkline = memo(function MiniSparkline({
 // ─── Conviction area chart ────────────────────────────────────────────────────
 
 const ConvictionChart = memo(function ConvictionChart({
-  data,
-  color,
-  themeId,
-  dashed,
+  data, color, themeId, dashed,
 }: {
-  data: number[]
-  color: string
-  themeId: string
-  dashed?: boolean
+  data: number[]; color: string; themeId: string; dashed?: boolean
 }) {
   const W = 800, H = 80
   const min = Math.min(...data) - 2
   const max = Math.max(...data) + 2
   const range = max - min
-  const pts = data.map((v, i) => ({
-    x: (i / (data.length - 1)) * W,
-    y: H - ((v - min) / range) * H,
-  }))
+  const pts = data.map((v, i) => ({ x: (i / (data.length - 1)) * W, y: H - ((v - min) / range) * H }))
   const line = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')
   const area = `${line} L ${W} ${H} L 0 ${H} Z`
   const gradId = `cg-${themeId}${dashed ? '-fwd' : ''}`
-
   return (
-    <svg
-      viewBox={`0 0 ${W} ${H}`}
-      className="w-full"
-      style={{ height: 80 }}
-      preserveAspectRatio="none"
-    >
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: 80 }} preserveAspectRatio="none">
       <defs>
         <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity={dashed ? '0.12' : '0.22'} />
@@ -605,92 +585,48 @@ const ConvictionChart = memo(function ConvictionChart({
         </linearGradient>
       </defs>
       <path d={area} fill={`url(#${gradId})`} />
-      <path
-        d={line}
-        fill="none"
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeDasharray={dashed ? '6 3' : undefined}
-      />
+      <path d={line} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" strokeDasharray={dashed ? '6 3' : undefined} />
       <circle cx={pts[pts.length - 1].x} cy={pts[pts.length - 1].y} r="3" fill={color} />
     </svg>
   )
 })
 
-// ─── Live clock ───────────────────────────────────────────────────────────────
-
-function LiveClock() {
-  const [time, setTime] = useState(() => new Date().toUTCString().slice(17, 25))
-  useEffect(() => {
-    const id = setInterval(() => setTime(new Date().toUTCString().slice(17, 25)), 1000)
-    return () => clearInterval(id)
-  }, [])
-  return (
-    <span suppressHydrationWarning className="font-mono text-[11px] text-zinc-400 dark:text-zinc-600">
-      {time} UTC
-    </span>
-  )
-}
-
 // ─── Holdings section ─────────────────────────────────────────────────────────
 
-const HoldingsSection = memo(function HoldingsSection({
-  holdings,
-  color,
-}: {
-  holdings: Holding[]
-  color: string
-}) {
+const HoldingsSection = memo(function HoldingsSection({ holdings, color }: { holdings: Holding[]; color: string }) {
   const maxWeight = Math.max(...holdings.map((h) => h.weight))
   const totalWeight = holdings.reduce((s, h) => s + h.weight, 0)
 
-  const container = {
-    hidden: {},
-    show: { transition: { staggerChildren: 0.055 } },
-  }
+  const container = { hidden: {}, show: { transition: { staggerChildren: 0.055 } } }
   const row = {
     hidden: { opacity: 0, x: -10 },
     show: { opacity: 1, x: 0, transition: { duration: 0.28, ease: [0.16, 1, 0.3, 1] as const } },
   }
 
   return (
-    <div className="border-b border-zinc-200 dark:border-zinc-800">
-      <div className="flex items-center justify-between px-6 py-2.5 border-b border-zinc-100 dark:border-zinc-800/60">
-        <p className="text-[10px] font-semibold tracking-wide text-zinc-500 dark:text-zinc-400">
-          Holdings
-        </p>
-        <p className="font-mono text-[10px] text-zinc-400 dark:text-zinc-600">
-          {totalWeight.toFixed(1)}% allocated
-        </p>
+    <div className="border-b border-white/[0.07]">
+      <div className="flex items-center justify-between px-6 py-2.5 border-b border-white/[0.05]">
+        <p className="text-[10px] font-semibold tracking-wide text-white/40">Holdings</p>
+        <p className="font-mono text-[10px] text-white/30">{totalWeight.toFixed(1)}% allocated</p>
       </div>
-      {/* Column headers */}
-      <div className="flex items-center gap-4 px-6 py-1.5 border-b border-zinc-100 dark:border-zinc-800/40">
-        <div className="w-14 font-mono text-[10px] text-zinc-400 tracking-wide">Ticker</div>
-        <div className="flex-1 font-mono text-[10px] text-zinc-400 tracking-wide">Name</div>
-        <div className="w-40 font-mono text-[10px] text-zinc-400 tracking-wide">Weight</div>
-        <div className="w-16 text-right font-mono text-[10px] text-zinc-400 tracking-wide">30d</div>
-        <div className="w-16 text-right font-mono text-[10px] text-zinc-400 tracking-wide">Contrib</div>
+      <div className="flex items-center gap-4 px-6 py-1.5 border-b border-white/[0.04]">
+        <div className="w-14 font-mono text-[10px] text-white/30 tracking-wide">Ticker</div>
+        <div className="flex-1 font-mono text-[10px] text-white/30 tracking-wide">Name</div>
+        <div className="w-40 font-mono text-[10px] text-white/30 tracking-wide">Weight</div>
+        <div className="w-16 text-right font-mono text-[10px] text-white/30 tracking-wide">30d</div>
+        <div className="w-16 text-right font-mono text-[10px] text-white/30 tracking-wide">Contrib</div>
       </div>
-      <motion.div
-        variants={container}
-        initial="hidden"
-        animate="show"
-        className="divide-y divide-zinc-100 dark:divide-zinc-800/50"
-      >
+      <motion.div variants={container} initial="hidden" animate="show" className="divide-y divide-white/[0.04]">
         {holdings.map((h) => (
           <motion.div key={h.ticker} variants={row} className="flex items-center gap-4 px-6 py-2.5">
             <div className="w-14">
-              <span className="font-mono text-[13px] font-bold text-zinc-900 dark:text-zinc-100">
-                {h.ticker}
-              </span>
+              <span className="font-mono text-[13px] font-bold text-[#f7f7f7]">{h.ticker}</span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-zinc-500 dark:text-zinc-500 truncate">{h.name}</p>
+              <p className="text-xs text-white/40 truncate">{h.name}</p>
             </div>
             <div className="w-40 flex items-center gap-2">
-              <div className="flex-1 h-1 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+              <div className="flex-1 h-1 bg-white/[0.08] rounded-full overflow-hidden">
                 <motion.div
                   className="h-full rounded-full"
                   style={{ backgroundColor: color, originX: 0 }}
@@ -699,32 +635,18 @@ const HoldingsSection = memo(function HoldingsSection({
                   transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] as const }}
                 />
               </div>
-              <span className="font-mono text-[11px] text-zinc-500 dark:text-zinc-500 w-10 text-right flex-shrink-0">
+              <span className="font-mono text-[11px] text-white/40 w-10 text-right flex-shrink-0">
                 {h.weight.toFixed(1)}%
               </span>
             </div>
             <div className="w-16 text-right">
-              <span
-                className={`font-mono text-xs font-semibold ${
-                  h.return30d >= 0
-                    ? 'text-emerald-600 dark:text-emerald-400'
-                    : 'text-rose-600 dark:text-rose-400'
-                }`}
-              >
-                {h.return30d >= 0 ? '+' : ''}
-                {h.return30d.toFixed(1)}%
+              <span className={`font-mono text-xs font-semibold ${h.return30d >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                {h.return30d >= 0 ? '+' : ''}{h.return30d.toFixed(1)}%
               </span>
             </div>
             <div className="w-16 text-right">
-              <span
-                className={`font-mono text-[11px] ${
-                  h.contribution >= 0
-                    ? 'text-emerald-600 dark:text-emerald-400'
-                    : 'text-rose-600 dark:text-rose-400'
-                }`}
-              >
-                {h.contribution >= 0 ? '+' : ''}
-                {h.contribution.toFixed(1)}pp
+              <span className={`font-mono text-[11px] ${h.contribution >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                {h.contribution >= 0 ? '+' : ''}{h.contribution.toFixed(1)}pp
               </span>
             </div>
           </motion.div>
@@ -736,23 +658,17 @@ const HoldingsSection = memo(function HoldingsSection({
 
 // ─── Framework tabs ───────────────────────────────────────────────────────────
 
-function FrameworkTabs({
-  active,
-  onChange,
-}: {
-  active: FrameworkType
-  onChange: (f: FrameworkType) => void
-}) {
+function FrameworkTabs({ active, onChange }: { active: FrameworkType; onChange: (f: FrameworkType) => void }) {
   return (
-    <div className="flex items-center rounded-md overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900">
+    <div className="flex items-center rounded-md overflow-hidden border border-white/[0.10] bg-white/[0.06]">
       {(['sa', 'dalio', 'godley'] as FrameworkType[]).map((f) => (
         <button
           key={f}
           onClick={() => onChange(f)}
           className={`px-3 py-1 text-[11px] font-mono font-semibold uppercase tracking-wide transition-colors ${
             active === f
-              ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
-              : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-500 dark:hover:text-zinc-300'
+              ? 'bg-white/15 text-[#f7f7f7]'
+              : 'text-white/40 hover:text-white/60'
           }`}
         >
           {f === 'sa' ? 'SA' : f === 'dalio' ? 'Dalio' : 'Godley'}
@@ -764,23 +680,17 @@ function FrameworkTabs({
 
 // ─── Horizon toggle ───────────────────────────────────────────────────────────
 
-function HorizonToggle({
-  active,
-  onChange,
-}: {
-  active: HorizonType
-  onChange: (h: HorizonType) => void
-}) {
+function HorizonToggle({ active, onChange }: { active: HorizonType; onChange: (h: HorizonType) => void }) {
   return (
-    <div className="flex items-center rounded overflow-hidden border border-zinc-200 dark:border-zinc-800">
+    <div className="flex items-center rounded overflow-hidden border border-white/[0.10]">
       {(['historical', 'forward'] as HorizonType[]).map((h) => (
         <button
           key={h}
           onClick={() => onChange(h)}
           className={`px-2 py-0.5 font-mono text-[10px] transition-colors ${
             active === h
-              ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
-              : 'text-zinc-400 hover:text-zinc-600 dark:text-zinc-600 dark:hover:text-zinc-400'
+              ? 'bg-white/15 text-[#f7f7f7]'
+              : 'text-white/40 hover:text-white/60'
           }`}
         >
           {h === 'historical' ? '30d' : '12M'}
@@ -790,46 +700,44 @@ function HorizonToggle({
   )
 }
 
-// ─── Dalio section ────────────────────────────────────────────────────────────
+// ─── Framework factor grid ────────────────────────────────────────────────────
 
-function DalioSection({ view }: { view: DalioView }) {
+function FactorGrid({ factors }: { factors: FrameworkFactor[] }) {
   return (
-    <div className="px-6 py-5 border-b border-zinc-200 dark:border-zinc-800">
-      <div className="flex items-center gap-2 mb-3">
-        <p className="text-[10px] font-semibold tracking-wide text-zinc-500 dark:text-zinc-400">
-          Dalio Framework — Debt Cycle Analysis
-        </p>
-        <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400">
-          {view.debtCyclePhase}
-        </span>
-      </div>
-      <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed mb-4 max-w-3xl">
-        {view.summary}
-      </p>
-      <div className="grid grid-cols-2 gap-px bg-zinc-200 dark:bg-zinc-800 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-800">
-        {view.factors.map((f) => (
-          <div key={f.label} className="bg-white dark:bg-zinc-900 px-3 py-2.5">
-            <p className="text-[10px] text-zinc-500 mb-0.5">{f.label}</p>
+    <>
+      <div className="grid grid-cols-2 gap-px bg-white/[0.06] rounded-lg overflow-hidden border border-white/[0.07]">
+        {factors.map((f) => (
+          <div key={f.label} className="bg-[rgb(16,14,28)] px-3 py-2.5">
+            <p className="text-[10px] text-white/40 mb-0.5">{f.label}</p>
             <div className="flex items-center gap-1.5">
-              <span className="font-mono text-sm font-semibold text-zinc-900 dark:text-zinc-100">{f.value}</span>
+              <span className="font-mono text-sm font-semibold text-[#f7f7f7]">{f.value}</span>
               {f.favorable === true && <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 flex-shrink-0" />}
               {f.favorable === false && <span className="h-1.5 w-1.5 rounded-full bg-rose-500 flex-shrink-0" />}
-              {f.favorable === null && <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 flex-shrink-0" />}
+              {f.favorable === null && <span className="h-1.5 w-1.5 rounded-full bg-white/30 flex-shrink-0" />}
             </div>
           </div>
         ))}
       </div>
-      <div className="flex items-center gap-4 mt-3 font-mono text-[10px] text-zinc-400 dark:text-zinc-600">
-        <span className="flex items-center gap-1">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />Favorable
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />Unfavorable
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="h-1.5 w-1.5 rounded-full bg-zinc-400" />Neutral
-        </span>
+      <div className="flex items-center gap-4 mt-3 font-mono text-[10px] text-white/30">
+        <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />Favorable</span>
+        <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-rose-500" />Unfavorable</span>
+        <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-white/30" />Neutral</span>
       </div>
+    </>
+  )
+}
+
+// ─── Dalio section ────────────────────────────────────────────────────────────
+
+function DalioSection({ view }: { view: DalioView }) {
+  return (
+    <div className="px-6 py-5 border-b border-white/[0.07]">
+      <div className="flex items-center gap-2 mb-3">
+        <p className="text-[10px] font-semibold tracking-wide text-white/40">Dalio Framework — Debt Cycle Analysis</p>
+        <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400">{view.debtCyclePhase}</span>
+      </div>
+      <p className="text-sm text-[#cecfd2] leading-relaxed mb-4 max-w-3xl">{view.summary}</p>
+      <FactorGrid factors={view.factors} />
     </div>
   )
 }
@@ -837,58 +745,27 @@ function DalioSection({ view }: { view: DalioView }) {
 // ─── Godley section ───────────────────────────────────────────────────────────
 
 const FLOW_CONSISTENCY_BADGE: Record<GodleyView['flowConsistency'], string> = {
-  strong: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
-  moderate: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
-  fragile: 'bg-rose-500/10 text-rose-600 dark:text-rose-400',
+  strong: 'bg-emerald-500/10 text-emerald-400',
+  moderate: 'bg-amber-500/10 text-amber-400',
+  fragile: 'bg-rose-500/10 text-rose-400',
 }
 
 function GodleySection({ view }: { view: GodleyView }) {
   return (
-    <div className="px-6 py-5 border-b border-zinc-200 dark:border-zinc-800">
+    <div className="px-6 py-5 border-b border-white/[0.07]">
       <div className="flex items-center gap-2 mb-3 flex-wrap">
-        <p className="text-[10px] font-semibold tracking-wide text-zinc-500 dark:text-zinc-400">
-          Godley Framework — Sectoral Balances
-        </p>
-        <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-violet-500/10 text-violet-600 dark:text-violet-400">
-          {view.sectorBalance}
-        </span>
+        <p className="text-[10px] font-semibold tracking-wide text-white/40">Godley Framework — Sectoral Balances</p>
+        <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-violet-500/10 text-violet-400">{view.sectorBalance}</span>
         <span className={`font-mono text-[10px] px-1.5 py-0.5 rounded ${FLOW_CONSISTENCY_BADGE[view.flowConsistency]}`}>
           {view.flowConsistency} flow
         </span>
       </div>
       <div className="flex items-start gap-2 mb-3">
-        <div className="flex-shrink-0 mt-0.5">
-          <span className="font-mono text-[10px] text-zinc-400 dark:text-zinc-600">Constraint:</span>
-        </div>
-        <span className="font-mono text-[10px] text-zinc-600 dark:text-zinc-400">{view.keyConstraint}</span>
+        <span className="font-mono text-[10px] text-white/30 flex-shrink-0">Constraint:</span>
+        <span className="font-mono text-[10px] text-white/50">{view.keyConstraint}</span>
       </div>
-      <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed mb-4 max-w-3xl">
-        {view.summary}
-      </p>
-      <div className="grid grid-cols-2 gap-px bg-zinc-200 dark:bg-zinc-800 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-800">
-        {view.factors.map((f) => (
-          <div key={f.label} className="bg-white dark:bg-zinc-900 px-3 py-2.5">
-            <p className="text-[10px] text-zinc-500 mb-0.5">{f.label}</p>
-            <div className="flex items-center gap-1.5">
-              <span className="font-mono text-sm font-semibold text-zinc-900 dark:text-zinc-100">{f.value}</span>
-              {f.favorable === true && <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 flex-shrink-0" />}
-              {f.favorable === false && <span className="h-1.5 w-1.5 rounded-full bg-rose-500 flex-shrink-0" />}
-              {f.favorable === null && <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 flex-shrink-0" />}
-            </div>
-          </div>
-        ))}
-      </div>
-      <div className="flex items-center gap-4 mt-3 font-mono text-[10px] text-zinc-400 dark:text-zinc-600">
-        <span className="flex items-center gap-1">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />Favorable
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />Unfavorable
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="h-1.5 w-1.5 rounded-full bg-zinc-400" />Neutral
-        </span>
-      </div>
+      <p className="text-sm text-[#cecfd2] leading-relaxed mb-4 max-w-3xl">{view.summary}</p>
+      <FactorGrid factors={view.factors} />
     </div>
   )
 }
@@ -896,17 +773,9 @@ function GodleySection({ view }: { view: GodleyView }) {
 // ─── Theme detail body ────────────────────────────────────────────────────────
 
 function ThemeDetail({
-  theme,
-  color,
-  framework,
-  horizon,
-  onHorizonChange,
+  theme, color, framework, horizon, onHorizonChange,
 }: {
-  theme: Theme
-  color: string
-  framework: FrameworkType
-  horizon: HorizonType
-  onHorizonChange: (h: HorizonType) => void
+  theme: Theme; color: string; framework: FrameworkType; horizon: HorizonType; onHorizonChange: (h: HorizonType) => void
 }) {
   const chartData = horizon === 'historical' ? theme.convictionHistory : theme.forwardConviction12m
   const chartLabel = horizon === 'historical' ? '30-Day History' : '12M Forward'
@@ -921,166 +790,111 @@ function ThemeDetail({
       exit={{ opacity: 0, y: -6 }}
       transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] as const }}
     >
-      {/* ── Section 1: Conviction strip ── */}
-      <div className="grid grid-cols-[5fr_4fr] border-b border-zinc-200 dark:border-zinc-800">
-        {/* Conviction score */}
-        <div className="px-6 py-5 border-r border-zinc-200 dark:border-zinc-800">
-          <p className="text-[10px] font-semibold tracking-wide text-zinc-500 dark:text-zinc-400 mb-3">
-            Conviction Score
-          </p>
+      {/* Section 1: Conviction strip */}
+      <div className="grid grid-cols-[5fr_4fr] border-b border-white/[0.07]">
+        <div className="px-6 py-5 border-r border-white/[0.07]">
+          <p className="text-[10px] font-semibold tracking-wide text-white/40 mb-3">Conviction Score</p>
           <div className="flex items-end gap-3 mb-4">
-            <span className="font-mono text-5xl font-bold leading-none text-zinc-900 dark:text-zinc-100">
+            <span className="font-mono text-5xl font-bold leading-none text-[#f7f7f7]">
               {theme.conviction.toFixed(1)}
             </span>
-            <div
-              className={`flex items-center gap-1 rounded px-2 py-1 font-mono text-xs font-semibold mb-1 ${
-                theme.convictionDelta >= 0
-                  ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                  : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
-              }`}
-            >
-              {theme.convictionDelta >= 0 ? (
-                <TrendUp size={12} weight="bold" />
-              ) : (
-                <TrendDown size={12} weight="bold" />
-              )}
-              {theme.convictionDelta >= 0 ? '+' : ''}
-              {theme.convictionDelta.toFixed(1)} vs 7d
+            <div className={`flex items-center gap-1 rounded px-2 py-1 font-mono text-xs font-semibold mb-1 ${
+              theme.convictionDelta >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'
+            }`}>
+              {theme.convictionDelta >= 0 ? <TrendUp size={12} weight="bold" /> : <TrendDown size={12} weight="bold" />}
+              {theme.convictionDelta >= 0 ? '+' : ''}{theme.convictionDelta.toFixed(1)} vs 7d
             </div>
           </div>
-          <div className="flex items-center gap-5 font-mono text-[11px] text-zinc-500 dark:text-zinc-500">
-            <span>
-              <span className="font-semibold text-zinc-700 dark:text-zinc-300">{theme.holdings.length}</span>{' '}
-              holdings
-            </span>
-            <span>
-              <span className="font-semibold text-zinc-700 dark:text-zinc-300">{theme.signals.length}</span>{' '}
-              signals
-            </span>
-            <span>
-              <span className="font-semibold text-zinc-700 dark:text-zinc-300">{theme.catalysts.length}</span>{' '}
-              catalysts
-            </span>
+          <div className="flex items-center gap-5 font-mono text-[11px] text-white/40">
+            <span><span className="font-semibold text-[#cecfd2]">{theme.holdings.length}</span> holdings</span>
+            <span><span className="font-semibold text-[#cecfd2]">{theme.signals.length}</span> signals</span>
+            <span><span className="font-semibold text-[#cecfd2]">{theme.catalysts.length}</span> catalysts</span>
           </div>
         </div>
-
-        {/* Conviction chart */}
         <div className="px-6 py-5">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <p className="text-[10px] font-semibold tracking-wide text-zinc-500 dark:text-zinc-400">
-                {chartLabel}
-              </p>
+              <p className="text-[10px] font-semibold tracking-wide text-white/40">{chartLabel}</p>
               <HorizonToggle active={horizon} onChange={onHorizonChange} />
             </div>
-            <div className="flex items-center gap-3 font-mono text-[10px] text-zinc-400 dark:text-zinc-600">
+            <div className="flex items-center gap-3 font-mono text-[10px] text-white/30">
               <span>H {chartHigh}</span>
               <span>L {chartLow}</span>
             </div>
           </div>
-          <ConvictionChart
-            data={chartData}
-            color={color}
-            themeId={theme.id}
-            dashed={horizon === 'forward'}
-          />
+          <ConvictionChart data={chartData} color={color} themeId={theme.id} dashed={horizon === 'forward'} />
           {horizon === 'forward' && (
             <div className="flex justify-between mt-1 px-0.5">
               {MONTH_LABELS.map((m) => (
-                <span key={m} className="font-mono text-[9px] text-zinc-400 dark:text-zinc-700">
-                  {m}
-                </span>
+                <span key={m} className="font-mono text-[9px] text-white/20">{m}</span>
               ))}
             </div>
           )}
         </div>
       </div>
 
-      {/* ── Section 2: Thesis / Framework view ── */}
+      {/* Section 2: Thesis / Framework view */}
       {framework === 'sa' && (
-        <div className="px-6 py-5 border-b border-zinc-200 dark:border-zinc-800">
-          <p className="text-[10px] font-semibold tracking-wide text-zinc-500 dark:text-zinc-400 mb-2">
-            Investment Thesis
-          </p>
-          <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed mb-4 max-w-3xl">
-            {theme.thesis}
-          </p>
+        <div className="px-6 py-5 border-b border-white/[0.07]">
+          <p className="text-[10px] font-semibold tracking-wide text-white/40 mb-2">Investment Thesis</p>
+          <p className="text-sm text-[#cecfd2] leading-relaxed mb-4 max-w-3xl">{theme.thesis}</p>
           <div className="flex flex-wrap gap-2">
             {theme.assumptions.map((a, i) => {
               const isHolding = a.status === 'holding'
               const isAtRisk = a.status === 'at-risk'
               const Icon = isHolding ? CheckCircle : isAtRisk ? Warning : XCircle
-              const iconCls = isHolding
-                ? 'text-emerald-500'
-                : isAtRisk
-                ? 'text-amber-500'
-                : 'text-rose-500'
+              const iconCls = isHolding ? 'text-emerald-500' : isAtRisk ? 'text-amber-500' : 'text-rose-500'
               const chipCls = isHolding
-                ? 'border-emerald-200 dark:border-emerald-900/60 bg-emerald-50 dark:bg-emerald-900/20'
+                ? 'border-emerald-500/20 bg-emerald-500/[0.08]'
                 : isAtRisk
-                ? 'border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-900/20'
-                : 'border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-900/20'
+                ? 'border-amber-500/20 bg-amber-500/[0.08]'
+                : 'border-rose-500/20 bg-rose-500/[0.08]'
               return (
                 <div key={i} className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 ${chipCls}`}>
                   <Icon size={12} weight="fill" className={iconCls} />
-                  <span className="text-xs text-zinc-700 dark:text-zinc-300">{a.label}</span>
+                  <span className="text-xs text-[#cecfd2]">{a.label}</span>
                 </div>
               )
             })}
           </div>
         </div>
       )}
-
       {framework === 'dalio' && <DalioSection view={theme.dalioView} />}
-
       {framework === 'godley' && <GodleySection view={theme.godleyView} />}
 
-      {/* ── Section 3: Holdings ── */}
+      {/* Section 3: Holdings */}
       <HoldingsSection holdings={theme.holdings} color={color} />
 
-      {/* ── Section 4: Signals + Catalysts ── */}
-      <div className="grid grid-cols-[3fr_2fr] border-b border-zinc-200 dark:border-zinc-800">
-        {/* Signal feed */}
-        <div className="px-6 py-5 border-r border-zinc-200 dark:border-zinc-800">
-          <p className="text-[10px] font-semibold tracking-wide text-zinc-500 dark:text-zinc-400 mb-4">
-            Recent Signals
-          </p>
+      {/* Section 4: Signals + Catalysts */}
+      <div className="grid grid-cols-[3fr_2fr] border-b border-white/[0.07]">
+        <div className="px-6 py-5 border-r border-white/[0.07]">
+          <p className="text-[10px] font-semibold tracking-wide text-white/40 mb-4">Recent Signals</p>
           <div className="relative pl-5 space-y-4">
-            <div className="absolute left-[7px] top-1 bottom-1 w-px bg-zinc-100 dark:bg-zinc-800" />
+            <div className="absolute left-[7px] top-1 bottom-1 w-px bg-white/[0.08]" />
             {theme.signals.map((s, i) => (
               <div key={i} className="relative">
-                <div
-                  className={`absolute -left-5 top-0.5 h-3 w-3 rounded-full border-2 border-white dark:border-zinc-950 ${SIGNAL_DOT[s.type]}`}
-                />
+                <div className={`absolute -left-5 top-0.5 h-3 w-3 rounded-full border-2 border-[rgb(16,14,28)] ${SIGNAL_DOT[s.type]}`} />
                 <div className="flex items-center gap-2 mb-0.5">
-                  <span className="font-mono text-[10px] text-zinc-400 dark:text-zinc-600">{s.date}</span>
-                  <span className="font-mono text-[10px] text-zinc-300 dark:text-zinc-700">{s.source}</span>
+                  <span className="font-mono text-[10px] text-white/30">{s.date}</span>
+                  <span className="font-mono text-[10px] text-white/20">{s.source}</span>
                 </div>
-                <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-snug">{s.text}</p>
+                <p className="text-xs text-[#cecfd2] leading-snug">{s.text}</p>
               </div>
             ))}
           </div>
         </div>
-
-        {/* Catalyst board */}
         <div className="px-6 py-5">
-          <p className="text-[10px] font-semibold tracking-wide text-zinc-500 dark:text-zinc-400 mb-4">
-            Upcoming Catalysts
-          </p>
+          <p className="text-[10px] font-semibold tracking-wide text-white/40 mb-4">Upcoming Catalysts</p>
           <div className="space-y-4">
             {theme.catalysts.map((c, i) => (
               <div key={i} className="flex items-start gap-3">
                 <div className="flex-shrink-0 w-10 text-center">
-                  <p className="font-mono text-xl font-bold leading-none text-zinc-900 dark:text-zinc-100">
-                    {c.daysOut}
-                  </p>
-                  <p className="font-mono text-[9px] text-zinc-400 dark:text-zinc-600 mt-0.5">days</p>
+                  <p className="font-mono text-xl font-bold leading-none text-[#f7f7f7]">{c.daysOut}</p>
+                  <p className="font-mono text-[9px] text-white/30 mt-0.5">days</p>
                 </div>
                 <div className="flex-1 min-w-0 pt-0.5">
-                  <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-snug mb-1.5">{c.event}</p>
-                  <span
-                    className={`font-mono text-[10px] font-semibold tracking-wide rounded px-1.5 py-0.5 ${IMPACT_BADGE[c.impact]}`}
-                  >
+                  <p className="text-xs text-[#cecfd2] leading-snug mb-1.5">{c.event}</p>
+                  <span className={`font-mono text-[10px] font-semibold tracking-wide rounded px-1.5 py-0.5 ${IMPACT_BADGE[c.impact]}`}>
                     {c.impact} impact
                   </span>
                 </div>
@@ -1090,34 +904,25 @@ function ThemeDetail({
         </div>
       </div>
 
-      {/* ── Section 5: Risk factors ── */}
+      {/* Section 5: Risk factors */}
       <div className="px-6 py-5">
-        <p className="text-[10px] font-semibold tracking-wide text-zinc-500 dark:text-zinc-400 mb-4">
-          Risk Factors
-        </p>
+        <p className="text-[10px] font-semibold tracking-wide text-white/40 mb-4">Risk Factors</p>
         <div className="grid grid-cols-2 gap-3">
           {theme.risks.map((r, i) => (
-            <div
-              key={i}
-              className="rounded-lg border border-zinc-100 dark:border-zinc-800 px-4 py-3"
-            >
-              <p className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 mb-2">{r.label}</p>
+            <div key={i} className="rounded-lg border border-white/[0.07] bg-white/[0.03] px-4 py-3">
+              <p className="text-xs font-semibold text-[#f7f7f7] mb-2">{r.label}</p>
               <div className="flex items-center gap-3 mb-2">
                 <div className="flex items-center gap-1">
-                  <span className="text-[10px] text-zinc-400 dark:text-zinc-600">Prob</span>
-                  <span className={`font-mono text-[10px] font-semibold uppercase ${RISK_COLOR[r.probability]}`}>
-                    {r.probability}
-                  </span>
+                  <span className="text-[10px] text-white/30">Prob</span>
+                  <span className={`font-mono text-[10px] font-semibold uppercase ${RISK_COLOR[r.probability]}`}>{r.probability}</span>
                 </div>
-                <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-800" />
+                <div className="h-3 w-px bg-white/[0.08]" />
                 <div className="flex items-center gap-1">
-                  <span className="text-[10px] text-zinc-400 dark:text-zinc-600">Impact</span>
-                  <span className={`font-mono text-[10px] font-semibold uppercase ${RISK_COLOR[r.impact]}`}>
-                    {r.impact}
-                  </span>
+                  <span className="text-[10px] text-white/30">Impact</span>
+                  <span className={`font-mono text-[10px] font-semibold uppercase ${RISK_COLOR[r.impact]}`}>{r.impact}</span>
                 </div>
               </div>
-              <p className="text-[11px] text-zinc-500 dark:text-zinc-500 leading-snug">{r.notes}</p>
+              <p className="text-[11px] text-white/40 leading-snug">{r.notes}</p>
             </div>
           ))}
         </div>
@@ -1141,91 +946,71 @@ export default function ThemesClient() {
     }
   }, [searchParams])
 
-  const selectedTheme = useMemo(
-    () => THEMES.find((t) => t.id === selectedId)!,
-    [selectedId]
-  )
+  const selectedTheme = useMemo(() => THEMES.find((t) => t.id === selectedId)!, [selectedId])
   const color = selectedTheme.color
 
   return (
-    <div className="flex h-full bg-white dark:bg-zinc-950">
-      {/* ── Left: Theme selector ── */}
-      <div className="w-52 flex-shrink-0 flex flex-col border-r border-zinc-200 dark:border-zinc-800 overflow-y-auto">
-        <div className="flex h-14 items-center px-5 border-b border-zinc-200 dark:border-zinc-800">
-          <p className="text-[10px] font-semibold tracking-wide text-zinc-500 dark:text-zinc-400">
-            6 themes
-          </p>
+    <div
+      className="relative flex h-full overflow-hidden"
+      style={{ background: "linear-gradient(144deg, rgb(21,18,37) 15%, rgb(5,5,30) 82%)" }}
+    >
+      {/* Radial glow overlay */}
+      <div
+        className="pointer-events-none absolute inset-0 z-0"
+        style={{ background: "radial-gradient(ellipse 75% 55% at 45% 80%, rgba(30,58,200,0.32) 0%, transparent 68%)" }}
+      />
+
+      {/* Left: Theme selector sidebar */}
+      <div className="relative z-10 w-52 flex-shrink-0 flex flex-col border-r border-white/[0.07] overflow-y-auto">
+        {/* Sidebar header */}
+        <div className="flex h-[72px] items-center px-5 border-b border-white/[0.07]">
+          <Link href="/" className="flex items-center gap-2.5 shrink-0">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 ring-1 ring-white/15">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M11.5 4.5C11.5 3.12 10.38 2 9 2H5.5C4.12 2 3 3.12 3 4.5C3 5.88 4.12 7 5.5 7H10.5C11.88 7 13 8.12 13 9.5C13 10.88 11.88 12 10.5 12H7C5.62 12 4.5 10.88 4.5 9.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+            </div>
+            <span className="font-display text-sm font-normal tracking-[0.28px] text-[#f7f7f7]">Stellar</span>
+          </Link>
+        </div>
+        <div className="flex items-center px-5 py-2.5 border-b border-white/[0.05]">
+          <p className="text-[10px] font-semibold tracking-wide text-white/40">6 themes</p>
         </div>
         {THEMES.map((t) => {
           const isActive = t.id === selectedId
-          const tc = t.color
           return (
             <button
               key={t.id}
               onClick={() => setSelectedId(t.id)}
               className={[
-                'w-full text-left px-4 py-3.5 border-l-[3px] border-b border-zinc-100 dark:border-zinc-800/50 transition-colors duration-150',
-                isActive
-                  ? 'bg-zinc-50 dark:bg-zinc-800/50'
-                  : 'hover:bg-zinc-50 dark:hover:bg-zinc-800/30',
+                'w-full text-left px-4 py-3.5 border-l-[3px] border-b border-white/[0.05] transition-colors duration-150',
+                isActive ? 'bg-white/[0.05]' : 'hover:bg-white/[0.03]',
               ].join(' ')}
-              style={{ borderLeftColor: isActive ? tc : 'transparent' }}
+              style={{ borderLeftColor: isActive ? t.color : 'transparent' }}
             >
               <div className="flex items-center justify-between mb-2">
-                <span
-                  className={`text-xs font-medium leading-snug ${
-                    isActive
-                      ? 'text-zinc-900 dark:text-zinc-100'
-                      : 'text-zinc-500 dark:text-zinc-500'
-                  }`}
-                >
+                <span className={`text-xs font-medium leading-snug ${isActive ? 'text-[#f7f7f7]' : 'text-white/40'}`}>
                   {t.name}
                 </span>
-                <span
-                  className={`font-mono text-[10px] font-semibold rounded px-1 ${STATUS_STYLES[t.status].badge}`}
-                >
-                  {t.convictionDelta >= 0 ? '+' : ''}
-                  {t.convictionDelta.toFixed(1)}
+                <span className={`font-mono text-[10px] font-semibold rounded px-1 ${STATUS_STYLES[t.status].badge}`}>
+                  {t.convictionDelta >= 0 ? '+' : ''}{t.convictionDelta.toFixed(1)}
                 </span>
               </div>
               <div className="flex items-end justify-between">
-                <span className="font-mono text-2xl font-bold leading-none text-zinc-900 dark:text-zinc-100">
+                <span className={`font-mono text-2xl font-bold leading-none ${isActive ? 'text-[#f7f7f7]' : 'text-white/50'}`}>
                   {t.conviction.toFixed(0)}
                 </span>
-                <MiniSparkline data={t.convictionHistory.slice(-15)} color={tc} />
+                <MiniSparkline data={t.convictionHistory.slice(-15)} color={t.color} />
               </div>
             </button>
           )
         })}
       </div>
 
-      {/* ── Right: Detail panel ── */}
-      <div className="flex flex-1 flex-col min-w-0">
+      {/* Right: Detail panel */}
+      <div className="relative z-10 flex flex-1 flex-col min-w-0">
         {/* Header */}
-        <div className="flex h-14 flex-shrink-0 items-center justify-between border-b border-zinc-200 dark:border-zinc-800 px-5">
-          <div className="flex items-center gap-3">
-            <span
-              className="h-2.5 w-2.5 rounded-full flex-shrink-0"
-              style={{ backgroundColor: color }}
-            />
-            <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-              {selectedTheme.name}
-            </h1>
-            <span
-              className={`font-mono text-[10px] font-semibold tracking-wide rounded px-1.5 py-0.5 ${STATUS_STYLES[selectedTheme.status].badge}`}
-            >
-              {STATUS_STYLES[selectedTheme.status].label}
-            </span>
-            <span className="text-[11px] text-zinc-400 dark:text-zinc-600">
-              {selectedTheme.description}
-            </span>
-          </div>
-          <div className="flex items-center gap-3">
-            <FrameworkTabs active={framework} onChange={setFramework} />
-            <LiveClock />
-            <ThemeToggle />
-          </div>
-        </div>
+        <StellarHeader />
 
         {/* Scrollable body */}
         <div className="flex-1 overflow-y-auto">

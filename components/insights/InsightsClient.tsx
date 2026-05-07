@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Lightbulb,
@@ -13,8 +13,8 @@ import {
   BookBookmark,
   Warning,
   User,
-} from "@phosphor-icons/react/dist/ssr";
-import ThemeToggle from "@/components/ThemeToggle";
+} from "@phosphor-icons/react";
+import StellarHeader from "@/components/StellarHeader";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -207,26 +207,26 @@ const STAGE_CONFIG: Record<
 > = {
   draft: {
     label: "DRAFT",
-    bg: "bg-zinc-500/10 dark:bg-zinc-500/15",
-    text: "text-zinc-500 dark:text-zinc-400",
-    dot: "bg-zinc-400 dark:bg-zinc-600",
+    bg: "bg-zinc-500/15",
+    text: "text-white/40",
+    dot: "bg-zinc-500",
   },
   pending_review: {
     label: "PENDING REVIEW",
-    bg: "bg-amber-500/15 dark:bg-amber-500/20",
-    text: "text-amber-600 dark:text-amber-400",
+    bg: "bg-amber-500/20",
+    text: "text-amber-400",
     dot: "bg-amber-500",
   },
   approved: {
     label: "APPROVED",
-    bg: "bg-emerald-500/15 dark:bg-emerald-500/20",
-    text: "text-emerald-600 dark:text-emerald-400",
+    bg: "bg-emerald-500/20",
+    text: "text-emerald-400",
     dot: "bg-emerald-500",
   },
   shared: {
     label: "IN TEAM MEMORY",
-    bg: "bg-blue-500/15 dark:bg-blue-500/20",
-    text: "text-blue-600 dark:text-blue-400",
+    bg: "bg-blue-500/20",
+    text: "text-blue-400",
     dot: "bg-blue-500",
   },
 };
@@ -237,23 +237,23 @@ const CATEGORY_CONFIG: Record<
 > = {
   thesis_update: {
     label: "THESIS UPDATE",
-    bg: "bg-violet-500/15 dark:bg-violet-500/20",
-    text: "text-violet-600 dark:text-violet-400",
+    bg: "bg-violet-500/20",
+    text: "text-violet-400",
   },
   risk_flag: {
     label: "RISK FLAG",
-    bg: "bg-rose-500/15 dark:bg-rose-500/20",
-    text: "text-rose-600 dark:text-rose-400",
+    bg: "bg-rose-500/20",
+    text: "text-rose-400",
   },
   opportunity: {
     label: "OPPORTUNITY",
-    bg: "bg-emerald-500/15 dark:bg-emerald-500/20",
-    text: "text-emerald-600 dark:text-emerald-400",
+    bg: "bg-emerald-500/20",
+    text: "text-emerald-400",
   },
   methodology: {
     label: "METHODOLOGY",
-    bg: "bg-blue-500/15 dark:bg-blue-500/20",
-    text: "text-blue-600 dark:text-blue-400",
+    bg: "bg-blue-500/20",
+    text: "text-blue-400",
   },
 };
 
@@ -265,11 +265,11 @@ const STAT_TILES: {
   accent: string;
   activeAccent: string;
 }[] = [
-  { key: "all", label: "All", accent: "text-zinc-500", activeAccent: "text-zinc-900 dark:text-zinc-100" },
-  { key: "pending_review", label: "Pending Review", accent: "text-amber-500", activeAccent: "text-amber-600 dark:text-amber-400" },
-  { key: "approved", label: "Approved", accent: "text-emerald-500", activeAccent: "text-emerald-600 dark:text-emerald-400" },
-  { key: "draft", label: "Draft", accent: "text-zinc-400", activeAccent: "text-zinc-500" },
-  { key: "shared", label: "In Memory", accent: "text-blue-500", activeAccent: "text-blue-600 dark:text-blue-400" },
+  { key: "all", label: "All", accent: "text-white/50", activeAccent: "text-[#f7f7f7]" },
+  { key: "pending_review", label: "Pending Review", accent: "text-amber-500", activeAccent: "text-amber-400" },
+  { key: "approved", label: "Approved", accent: "text-emerald-500", activeAccent: "text-emerald-400" },
+  { key: "draft", label: "Draft", accent: "text-white/40", activeAccent: "text-white/50" },
+  { key: "shared", label: "In Memory", accent: "text-blue-500", activeAccent: "text-blue-400" },
 ];
 
 // ─── Small Components ─────────────────────────────────────────────────────────
@@ -304,33 +304,6 @@ function CategoryBadge({ category }: { category: InsightCategory }) {
   );
 }
 
-function LiveClock() {
-  const [time, setTime] = useState("");
-  const ref = useRef<ReturnType<typeof setInterval> | null>(null);
-  useEffect(() => {
-    const tick = () =>
-      setTime(
-        new Date().toLocaleTimeString("en-US", {
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-          timeZone: "UTC",
-          hour12: false,
-        }) + " UTC"
-      );
-    tick();
-    ref.current = setInterval(tick, 1000);
-    return () => {
-      if (ref.current) clearInterval(ref.current);
-    };
-  }, []);
-  return (
-    <span className="font-mono text-[11px] tabular-nums text-zinc-400 dark:text-zinc-600">
-      {time}
-    </span>
-  );
-}
-
 function relativeTime(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
   const h = Math.floor(diff / 3_600_000);
@@ -351,7 +324,7 @@ function StageActions({
   if (stage === "draft") {
     return (
       <div className="flex items-center justify-between">
-        <p className="text-[11px] text-zinc-400">Submit when ready for team review.</p>
+        <p className="text-[11px] text-white/40">Submit when ready for team review.</p>
         <button
           onClick={() => onAdvance("pending_review")}
           className="flex items-center gap-1.5 rounded-md bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-amber-600"
@@ -368,7 +341,7 @@ function StageActions({
       <div className="flex items-center justify-between">
         <button
           onClick={() => onAdvance("draft")}
-          className="flex items-center gap-1.5 rounded-md border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-50 hover:text-zinc-700 dark:border-zinc-800 dark:hover:bg-zinc-900 dark:hover:text-zinc-300"
+          className="flex items-center gap-1.5 rounded-md border border-white/[0.15] px-3 py-1.5 text-xs font-medium text-white/60 transition-colors hover:bg-white/[0.06] hover:text-white"
         >
           <ArrowCounterClockwise size={12} />
           Request Changes
@@ -387,7 +360,7 @@ function StageActions({
   if (stage === "approved") {
     return (
       <div className="flex items-center justify-between">
-        <p className="text-[11px] text-zinc-400">Approved — ready to publish to team.</p>
+        <p className="text-[11px] text-white/40">Approved — ready to publish to team.</p>
         <button
           onClick={() => onAdvance("shared")}
           className="flex items-center gap-1.5 rounded-md bg-blue-500 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-blue-600"
@@ -405,7 +378,7 @@ function StageActions({
       <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-500/15">
         <BookBookmark size={11} className="text-blue-500" />
       </div>
-      <p className="text-[11px] font-medium text-blue-600 dark:text-blue-400">
+      <p className="text-[11px] font-medium text-blue-400">
         Published to team memory
       </p>
     </div>
@@ -428,7 +401,7 @@ function DetailPanel({
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="flex-shrink-0 border-b border-zinc-200 px-5 py-4 dark:border-zinc-800">
+      <div className="flex-shrink-0 border-b border-white/[0.07] px-5 py-4">
         <div className="mb-2 flex items-start justify-between gap-3">
           <div className="flex flex-wrap items-center gap-1.5">
             <StageBadge stage={stage} />
@@ -436,34 +409,34 @@ function DetailPanel({
           </div>
           <button
             onClick={onClose}
-            className="flex-shrink-0 rounded p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+            className="flex-shrink-0 rounded p-1 text-white/40 hover:bg-white/[0.06] hover:text-white/60"
           >
             <X size={14} />
           </button>
         </div>
-        <p className="text-sm font-semibold leading-snug text-zinc-900 dark:text-zinc-100">
+        <p className="text-sm font-semibold leading-snug text-[#f7f7f7]">
           {insight.title}
         </p>
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <div className="flex items-center gap-1">
-            <div className="flex h-4 w-4 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
-              <User size={9} className="text-zinc-500" />
+            <div className="flex h-4 w-4 items-center justify-center rounded-full bg-white/[0.06]">
+              <User size={9} className="text-white/50" />
             </div>
-            <span className="text-[11px] font-medium text-zinc-600 dark:text-zinc-400">
+            <span className="text-[11px] font-medium text-white/60">
               {insight.authorName}
             </span>
           </div>
           {insight.linkedTheme && (
-            <span className="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+            <span className="rounded bg-white/[0.06] px-1.5 py-0.5 font-mono text-[10px] text-white/50">
               {insight.linkedTheme}
             </span>
           )}
           {insight.linkedTicker && (
-            <span className="font-mono text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
+            <span className="font-mono text-[11px] font-semibold text-white/20">
               {insight.linkedTicker}
             </span>
           )}
-          <span className="font-mono text-[10px] text-zinc-400">
+          <span className="font-mono text-[10px] text-white/40">
             {relativeTime(insight.submittedAt)}
           </span>
         </div>
@@ -472,36 +445,36 @@ function DetailPanel({
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto">
         {/* Summary */}
-        <div className="border-b border-zinc-200 px-5 py-4 dark:border-zinc-800">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-600 mb-2">
+        <div className="border-b border-white/[0.07] px-5 py-4">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-white/40 mb-2">
             Summary
           </p>
-          <p className="rounded-md border-l-2 border-blue-400 bg-zinc-50 px-3 py-2.5 text-xs leading-relaxed text-zinc-700 dark:border-blue-500/60 dark:bg-zinc-900 dark:text-zinc-300">
+          <p className="rounded-md border-l-2 border-blue-500/60 bg-white/[0.04] px-3 py-2.5 text-xs leading-relaxed text-[#cecfd2]">
             {insight.summary}
           </p>
         </div>
 
         {/* Full analysis */}
-        <div className="border-b border-zinc-200 px-5 py-4 dark:border-zinc-800">
-          <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-600">
+        <div className="border-b border-white/[0.07] px-5 py-4">
+          <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-white/40">
             Analysis
           </p>
-          <p className="text-xs leading-relaxed text-zinc-600 dark:text-zinc-300">{insight.body}</p>
+          <p className="text-xs leading-relaxed text-[#cecfd2]">{insight.body}</p>
         </div>
 
         {/* Evidence */}
-        <div className="border-b border-zinc-200 px-5 py-4 dark:border-zinc-800">
-          <p className="mb-2.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-600">
+        <div className="border-b border-white/[0.07] px-5 py-4">
+          <p className="mb-2.5 text-[10px] font-semibold uppercase tracking-wider text-white/40">
             Supporting Data
           </p>
           <div className="space-y-1.5">
             {insight.evidence.map((e, i) => (
               <div
                 key={i}
-                className="flex items-center justify-between gap-3 rounded border border-zinc-100 bg-zinc-50 px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900"
+                className="flex items-center justify-between gap-3 rounded border border-white/[0.07] bg-white/[0.04] px-3 py-2"
               >
-                <span className="text-xs text-zinc-500 dark:text-zinc-400">{e.label}</span>
-                <span className="font-mono text-xs font-semibold text-zinc-800 dark:text-zinc-200">
+                <span className="text-xs text-white/50">{e.label}</span>
+                <span className="font-mono text-xs font-semibold text-[#f7f7f7]">
                   {e.value}
                 </span>
               </div>
@@ -511,13 +484,13 @@ function DetailPanel({
 
         {/* Reviewer notes */}
         {insight.reviewerNotes && (
-          <div className="border-b border-zinc-200 px-5 py-4 dark:border-zinc-800">
-            <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-600">
+          <div className="border-b border-white/[0.07] px-5 py-4">
+            <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-white/40">
               Reviewer Notes
             </p>
-            <div className="flex gap-2.5 rounded-md border border-emerald-200/60 bg-emerald-50/50 px-3 py-2.5 dark:border-emerald-500/20 dark:bg-emerald-500/10">
+            <div className="flex gap-2.5 rounded-md border border-emerald-500/20 bg-emerald-500/10 px-3 py-2.5">
               <CheckCircle size={13} className="mt-0.5 flex-shrink-0 text-emerald-500" />
-              <p className="text-xs leading-relaxed text-zinc-600 dark:text-zinc-300">
+              <p className="text-xs leading-relaxed text-[#cecfd2]">
                 {insight.reviewerNotes}
               </p>
             </div>
@@ -526,7 +499,7 @@ function DetailPanel({
       </div>
 
       {/* Action footer */}
-      <div className="flex-shrink-0 border-t border-zinc-200 px-5 py-3.5 dark:border-zinc-800">
+      <div className="flex-shrink-0 border-t border-white/[0.07] px-5 py-3.5">
         <StageActions stage={stage} onAdvance={onAdvance} />
       </div>
     </div>
@@ -593,28 +566,26 @@ export default function InsightsClient() {
   const pendingCount = counts.pending_review;
 
   return (
-    <div className="flex h-full flex-col bg-white dark:bg-zinc-950">
-      {/* Header */}
-      <div className="flex h-14 flex-shrink-0 items-center justify-between border-b border-zinc-200 px-5 dark:border-zinc-800">
-        <div className="flex items-center gap-2.5">
-          <Lightbulb size={16} className="text-blue-500" weight="fill" />
-          <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-            Team Insights
-          </span>
-          {pendingCount > 0 && (
-            <span className="flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-amber-500/15 px-1 font-mono text-[10px] font-semibold text-amber-600 dark:bg-amber-500/20 dark:text-amber-400">
-              {pendingCount}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-3">
-          <LiveClock />
-          <ThemeToggle />
-        </div>
-      </div>
+    <div
+      className="relative flex h-full flex-col overflow-hidden"
+      style={{
+        background:
+          "linear-gradient(144deg, rgb(21,18,37) 15%, rgb(5,5,30) 82%)",
+      }}
+    >
+      {/* Radial glow overlay */}
+      <div
+        className="pointer-events-none absolute inset-0 z-0"
+        style={{
+          background:
+            "radial-gradient(ellipse 75% 55% at 45% 80%, rgba(30,58,200,0.32) 0%, transparent 68%)",
+        }}
+      />
+
+      <StellarHeader />
 
       {/* Stat tiles */}
-      <div className="flex flex-shrink-0 items-center gap-1 border-b border-zinc-200 px-4 dark:border-zinc-800">
+      <div className="relative z-10 flex flex-shrink-0 items-center gap-1 border-b border-white/[0.07] px-4">
         {STAT_TILES.map((tile) => {
           const active = filter === tile.key;
           return (
@@ -626,9 +597,7 @@ export default function InsightsClient() {
               }}
               className={[
                 "relative flex items-center gap-1.5 px-3 py-3 text-xs font-medium transition-colors",
-                active
-                  ? tile.activeAccent
-                  : "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300",
+                active ? tile.activeAccent : "text-white/40 hover:text-white/60",
               ].join(" ")}
             >
               {active && (
@@ -653,25 +622,25 @@ export default function InsightsClient() {
       </div>
 
       {/* Search */}
-      <div className="flex-shrink-0 border-b border-zinc-200 px-4 py-2.5 dark:border-zinc-800">
-        <div className="flex items-center gap-2 rounded-md border border-zinc-200 bg-zinc-50 px-3 py-1.5 dark:border-zinc-800 dark:bg-zinc-900">
-          <MagnifyingGlass size={13} className="flex-shrink-0 text-zinc-400" />
+      <div className="relative z-10 flex-shrink-0 border-b border-white/[0.07] px-4 py-2.5">
+        <div className="flex items-center gap-2 rounded-md border border-white/[0.07] bg-white/[0.06] px-3 py-1.5">
+          <MagnifyingGlass size={13} className="flex-shrink-0 text-white/40" />
           <input
             type="text"
             placeholder="Search by title, author, theme, or ticker..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="min-w-0 flex-1 bg-transparent text-xs text-zinc-700 placeholder-zinc-400 outline-none dark:text-zinc-300 dark:placeholder-zinc-600"
+            className="min-w-0 flex-1 bg-transparent text-xs text-[#f7f7f7] placeholder:text-white/30 outline-none"
           />
         </div>
       </div>
 
       {/* Body */}
-      <div className="flex min-h-0 flex-1 overflow-hidden">
+      <div className="relative z-10 flex min-h-0 flex-1 overflow-hidden">
         {/* List */}
         <div className="flex flex-1 flex-col overflow-y-auto">
           {filtered.length === 0 ? (
-            <div className="flex flex-1 flex-col items-center justify-center gap-2 text-zinc-400">
+            <div className="flex flex-1 flex-col items-center justify-center gap-2 text-white/40">
               <Lightbulb size={24} />
               <p className="text-sm">No insights match</p>
             </div>
@@ -681,7 +650,7 @@ export default function InsightsClient() {
                 const cfg = STAGE_CONFIG[stage];
                 return (
                   <div key={stage}>
-                    <div className="flex items-center gap-2 border-b border-zinc-100 bg-zinc-50/60 px-4 py-1.5 dark:border-zinc-800/60 dark:bg-zinc-900/40">
+                    <div className="flex items-center gap-2 border-b border-white/[0.05] bg-white/[0.03] px-4 py-1.5">
                       <div className={["h-1.5 w-1.5 rounded-full", cfg.dot].join(" ")} />
                       <span
                         className={[
@@ -691,7 +660,7 @@ export default function InsightsClient() {
                       >
                         {cfg.label}
                       </span>
-                      <span className="font-mono text-[10px] text-zinc-400">{items.length}</span>
+                      <span className="font-mono text-[10px] text-white/40">{items.length}</span>
                     </div>
                     {items.map((insight) => {
                       const currentStage = getStage(insight);
@@ -703,10 +672,10 @@ export default function InsightsClient() {
                           key={insight.id}
                           onClick={() => setSelectedId(active ? null : insight.id)}
                           className={[
-                            "w-full border-b border-zinc-100 px-4 py-3 text-left transition-colors dark:border-zinc-800/60",
+                            "w-full border-b border-white/[0.05] px-4 py-3 text-left transition-colors",
                             active
-                              ? "bg-zinc-50 dark:bg-zinc-900/60"
-                              : "hover:bg-zinc-50/70 dark:hover:bg-zinc-900/30",
+                              ? "bg-white/[0.05]"
+                              : "hover:bg-white/[0.03]",
                           ].join(" ")}
                         >
                           <div className="flex items-start gap-3">
@@ -717,7 +686,7 @@ export default function InsightsClient() {
                               ].join(" ")}
                             />
                             <div className="min-w-0 flex-1">
-                              <p className="line-clamp-2 text-sm font-medium leading-snug text-zinc-800 dark:text-zinc-200">
+                              <p className="line-clamp-2 text-sm font-medium leading-snug text-[#f7f7f7]">
                                 {insight.title}
                               </p>
                               <div className="mt-1 flex flex-wrap items-center gap-1.5">
@@ -731,24 +700,24 @@ export default function InsightsClient() {
                                   {catCfg.label}
                                 </span>
                                 {insight.linkedTheme && (
-                                  <span className="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+                                  <span className="rounded bg-white/[0.06] px-1.5 py-0.5 font-mono text-[10px] text-white/50">
                                     {insight.linkedTheme}
                                   </span>
                                 )}
                                 {insight.linkedTicker && (
-                                  <span className="font-mono text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
+                                  <span className="font-mono text-[11px] font-semibold text-white/50">
                                     {insight.linkedTicker}
                                   </span>
                                 )}
                               </div>
                               <div className="mt-1 flex items-center gap-2">
-                                <span className="text-[10px] text-zinc-400">
+                                <span className="text-[10px] text-white/40">
                                   {insight.authorName}
                                 </span>
-                                <span className="font-mono text-[10px] text-zinc-300 dark:text-zinc-700">
+                                <span className="font-mono text-[10px] text-white/20">
                                   ·
                                 </span>
-                                <span className="font-mono text-[10px] text-zinc-400">
+                                <span className="font-mono text-[10px] text-white/40">
                                   {relativeTime(insight.submittedAt)}
                                 </span>
                               </div>
@@ -759,7 +728,7 @@ export default function InsightsClient() {
                                 "mt-1 flex-shrink-0 transition-transform",
                                 active
                                   ? "rotate-90 text-blue-500"
-                                  : "text-zinc-300 dark:text-zinc-700",
+                                  : "text-white/20",
                               ].join(" ")}
                             />
                           </div>
@@ -782,7 +751,7 @@ export default function InsightsClient() {
               animate={{ width: 420, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
               transition={{ type: "spring", stiffness: 380, damping: 38 }}
-              className="flex-shrink-0 overflow-hidden border-l border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950"
+              className="flex-shrink-0 overflow-hidden border-l border-white/[0.07] bg-transparent"
             >
               <motion.div
                 initial={{ x: 12, opacity: 0 }}

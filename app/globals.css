@@ -6,6 +6,7 @@
 @theme inline {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-gloock), Georgia, serif;
 }
 
 /* Semantic theme tokens */
@@ -42,6 +43,17 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background 0.2s ease, color 0.2s ease;
+}
+
+@keyframes thinking-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 4px rgba(120, 180, 255, 0.4));
+    opacity: 0.65;
+  }
+  50% {
+    filter: drop-shadow(0 0 14px rgba(140, 200, 255, 1)) drop-shadow(0 0 28px rgba(80, 140, 255, 0.6));
+    opacity: 1;
+  }
 }
 
 /* Scrollbar */

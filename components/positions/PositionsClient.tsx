@@ -16,7 +16,7 @@ import {
   Warning,
   Users,
 } from '@phosphor-icons/react'
-import ThemeToggle from '@/components/ThemeToggle'
+import StellarHeader from '@/components/StellarHeader'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -333,45 +333,45 @@ function formatValue(v: number): string {
 const SIG: Record<SignalType, { label: string; badge: string; dot: string; bar: string; border: string; groupBg: string; groupText: string }> = {
   kill: {
     label: 'KILL',
-    badge: 'bg-rose-500/15 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400',
+    badge: 'bg-rose-500/20 text-rose-400',
     dot: 'bg-rose-500',
     bar: 'bg-rose-500',
     border: 'border-rose-500/40',
-    groupBg: 'bg-rose-50 dark:bg-rose-500/10',
-    groupText: 'text-rose-600 dark:text-rose-400',
+    groupBg: 'bg-rose-500/10',
+    groupText: 'text-rose-400',
   },
   add: {
     label: 'ADD',
-    badge: 'bg-emerald-500/15 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400',
+    badge: 'bg-emerald-500/20 text-emerald-400',
     dot: 'bg-emerald-500',
     bar: 'bg-emerald-500',
     border: 'border-emerald-500/40',
-    groupBg: 'bg-emerald-50 dark:bg-emerald-500/10',
-    groupText: 'text-emerald-600 dark:text-emerald-400',
+    groupBg: 'bg-emerald-500/10',
+    groupText: 'text-emerald-400',
   },
   'at-risk': {
     label: 'AT RISK',
-    badge: 'bg-amber-500/15 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400',
+    badge: 'bg-amber-500/20 text-amber-400',
     dot: 'bg-amber-500',
     bar: 'bg-amber-400',
     border: 'border-amber-500/40',
-    groupBg: 'bg-amber-50 dark:bg-amber-500/10',
-    groupText: 'text-amber-600 dark:text-amber-400',
+    groupBg: 'bg-amber-500/10',
+    groupText: 'text-amber-400',
   },
   clear: {
     label: 'CLEAR',
-    badge: 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-500',
-    dot: 'bg-zinc-400 dark:bg-zinc-600',
-    bar: 'bg-zinc-300 dark:bg-zinc-700',
+    badge: 'bg-zinc-500/15 text-white/40',
+    dot: 'bg-white/30',
+    bar: 'bg-white/20',
     border: 'border-transparent',
-    groupBg: 'bg-zinc-50 dark:bg-zinc-900',
-    groupText: 'text-zinc-500 dark:text-zinc-500',
+    groupBg: 'bg-white/[0.03]',
+    groupText: 'text-white/40',
   },
 }
 
 const ACK_DOT: Record<AckState, string> = {
-  unread: 'bg-zinc-900 dark:bg-zinc-100',
-  reviewed: 'bg-zinc-400 dark:bg-zinc-600',
+  unread: 'bg-white/80',
+  reviewed: 'bg-white/30',
   acted: 'bg-emerald-500',
 }
 
@@ -384,11 +384,11 @@ const SEV_DOT: Record<'critical' | 'warning' | 'info', string> = {
 const SIGNAL_ORDER: SignalType[] = ['kill', 'add', 'at-risk', 'clear']
 
 const STAT_TILES: Array<{ key: FilterKey; label: string; numCls: string; accentCls: string }> = [
-  { key: 'all',      label: 'All',     numCls: 'text-zinc-900 dark:text-zinc-100',       accentCls: 'bg-zinc-400 dark:bg-zinc-500' },
-  { key: 'kill',     label: 'Kill',    numCls: 'text-rose-600 dark:text-rose-400',        accentCls: 'bg-rose-500' },
-  { key: 'add',      label: 'Add',     numCls: 'text-emerald-600 dark:text-emerald-400',  accentCls: 'bg-emerald-500' },
-  { key: 'at-risk',  label: 'At Risk', numCls: 'text-amber-600 dark:text-amber-400',      accentCls: 'bg-amber-500' },
-  { key: 'clear',    label: 'Clear',   numCls: 'text-zinc-500 dark:text-zinc-500',        accentCls: 'bg-zinc-400 dark:bg-zinc-600' },
+  { key: 'all',     label: 'All',     numCls: 'text-[#f7f7f7]',    accentCls: 'bg-white/40' },
+  { key: 'kill',    label: 'Kill',    numCls: 'text-rose-400',      accentCls: 'bg-rose-500' },
+  { key: 'add',     label: 'Add',     numCls: 'text-emerald-400',   accentCls: 'bg-emerald-500' },
+  { key: 'at-risk', label: 'At Risk', numCls: 'text-amber-400',     accentCls: 'bg-amber-500' },
+  { key: 'clear',   label: 'Clear',   numCls: 'text-white/40',      accentCls: 'bg-white/30' },
 ]
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -405,9 +405,9 @@ const SignalBadge = memo(function SignalBadge({ signal }: { signal: SignalType }
 
 const FactorStatusBadge = memo(function FactorStatusBadge({ status }: { status: FactorStatus }) {
   const cls = {
-    breached: 'bg-rose-500/10 text-rose-600 dark:text-rose-400',
-    near: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
-    ok: 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-500',
+    breached: 'bg-rose-500/10 text-rose-400',
+    near: 'bg-amber-500/10 text-amber-400',
+    ok: 'bg-white/[0.06] text-white/40',
   }[status]
   return (
     <span className={`rounded px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase ${cls}`}>
@@ -423,9 +423,9 @@ const FactorBar = memo(function FactorBar({ status, signal }: { status: FactorSt
       ? SIG[signal].bar
       : status === 'near'
       ? 'bg-amber-400'
-      : 'bg-zinc-200 dark:bg-zinc-700'
+      : 'bg-white/20'
   return (
-    <div className="h-1 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
+    <div className="h-1 w-full overflow-hidden rounded-full bg-white/[0.08]">
       <div className={`h-full rounded-full transition-all ${color}`} style={{ width }} />
     </div>
   )
@@ -434,13 +434,13 @@ const FactorBar = memo(function FactorBar({ status, signal }: { status: FactorSt
 const DirectionIcon = memo(function DirectionIcon({ direction }: { direction: 'up' | 'down' | 'flat' }) {
   if (direction === 'up') return <TrendUp size={11} className="text-rose-500" />
   if (direction === 'down') return <TrendDown size={11} className="text-emerald-500" />
-  return <Minus size={11} className="text-zinc-400" />
+  return <Minus size={11} className="text-white/40" />
 })
 
 function SignalGroupHeader({ signal, count }: { signal: SignalType; count: number }) {
   const s = SIG[signal]
   return (
-    <div className={`sticky top-0 z-10 flex items-center gap-2 border-b border-zinc-200 px-4 py-1.5 dark:border-zinc-800 ${s.groupBg}`}>
+    <div className={`sticky top-0 z-10 flex items-center gap-2 border-b border-white/[0.07] px-4 py-1.5 ${s.groupBg}`}>
       <span className={`font-mono text-[10px] font-semibold uppercase tracking-widest ${s.groupText}`}>
         {s.label}
       </span>
@@ -458,22 +458,19 @@ interface CrossPositionWarning {
 function CrossPositionWarnings({ warnings }: { warnings: CrossPositionWarning[] }) {
   if (warnings.length === 0) return null
   return (
-    <div className="flex-shrink-0 divide-y divide-amber-200/60 border-b border-amber-200 bg-amber-50/60 dark:divide-amber-500/10 dark:border-amber-500/20 dark:bg-amber-500/5">
+    <div className="flex-shrink-0 divide-y divide-amber-500/10 border-b border-amber-500/20 bg-amber-500/[0.06]">
       {warnings.map((w) => (
         <div key={w.alertId} className="flex items-center gap-2.5 px-4 py-2">
           <Warning size={11} weight="fill" className="flex-shrink-0 text-amber-500" />
           <div className="flex min-w-0 flex-1 items-center gap-2">
             <span className="flex gap-1">
               {w.tickers.map((t) => (
-                <span
-                  key={t}
-                  className="font-mono text-[10px] font-semibold text-amber-700 dark:text-amber-400"
-                >
+                <span key={t} className="font-mono text-[10px] font-semibold text-amber-400">
                   {t}
                 </span>
               ))}
             </span>
-            <span className="text-[10px] text-amber-700/70 dark:text-amber-400/60 truncate">
+            <span className="text-[10px] text-amber-400/60 truncate">
               share {w.alertTitle.toLowerCase()}
             </span>
           </div>
@@ -499,10 +496,10 @@ const PositionRow = memo(function PositionRow({
     <button
       onClick={() => onSelect(position.id)}
       className={[
-        'w-full text-left border-l-2 px-4 py-3.5 transition-colors duration-150',
+        'w-full text-left border-l-2 px-4 py-3.5 transition-colors duration-150 border-b border-white/[0.05]',
         isSelected
-          ? `${SIG[position.signal].border} bg-zinc-50 dark:bg-zinc-800/60`
-          : 'border-transparent hover:bg-zinc-50 dark:hover:bg-zinc-800/40',
+          ? `${SIG[position.signal].border} bg-white/[0.05]`
+          : 'border-transparent hover:bg-white/[0.03]',
       ].join(' ')}
     >
       <div className="flex items-start gap-3">
@@ -512,15 +509,15 @@ const PositionRow = memo(function PositionRow({
         <div className="min-w-0 flex-1">
           <div className="mb-1 flex items-center gap-2">
             <SignalBadge signal={position.signal} />
-            <span className="font-mono text-[10px] text-zinc-400 dark:text-zinc-600">
+            <span className="font-mono text-[10px] text-white/40">
               {position.theme}
             </span>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="font-mono text-sm font-bold text-zinc-900 dark:text-zinc-100">
+            <span className="font-mono text-sm font-bold text-[#f7f7f7]">
               {position.ticker}
             </span>
-            <span className="text-xs text-zinc-500 dark:text-zinc-500 truncate">
+            <span className="text-xs text-white/50 truncate">
               {position.name}
             </span>
           </div>
@@ -532,9 +529,9 @@ const PositionRow = memo(function PositionRow({
                   className={`inline-flex items-center rounded px-1.5 py-0.5 font-mono text-[9px] font-medium ${
                     f.status === 'breached'
                       ? position.signal === 'add'
-                        ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                        : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
-                      : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                        ? 'bg-emerald-500/10 text-emerald-400'
+                        : 'bg-rose-500/10 text-rose-400'
+                      : 'bg-amber-500/10 text-amber-400'
                   }`}
                 >
                   {f.label}
@@ -543,26 +540,20 @@ const PositionRow = memo(function PositionRow({
             </div>
           )}
           <div className="mt-1.5 flex items-center gap-3">
-            <span className="font-mono text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">
+            <span className="font-mono text-[11px] font-semibold text-[#cecfd2]">
               {formatValue(position.marketValue)}
             </span>
-            <span
-              className={`font-mono text-[11px] font-semibold ${
-                pnlPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
-              }`}
-            >
+            <span className={`font-mono text-[11px] font-semibold ${pnlPositive ? 'text-emerald-400' : 'text-rose-400'}`}>
               {pnlPositive ? '+' : ''}{position.pnl30d.toFixed(1)}%
             </span>
-            <span suppressHydrationWarning className="font-mono text-[10px] text-zinc-400 dark:text-zinc-600">
+            <span suppressHydrationWarning className="font-mono text-[10px] text-white/40">
               {relativeTime(position.lastUpdated)}
             </span>
           </div>
         </div>
         <CaretRight
           size={14}
-          className={`mt-0.5 flex-shrink-0 transition-colors ${
-            isSelected ? 'text-zinc-700 dark:text-zinc-300' : 'text-zinc-300 dark:text-zinc-700'
-          }`}
+          className={`mt-0.5 flex-shrink-0 transition-colors ${isSelected ? 'text-[#cecfd2]' : 'text-white/20'}`}
         />
       </div>
     </button>
@@ -593,26 +584,26 @@ const DetailPanel = memo(function DetailPanel({
         className="flex h-full min-w-0 flex-col"
       >
         {/* Header */}
-        <div className="flex flex-shrink-0 items-start justify-between gap-3 border-b border-zinc-200 px-5 py-4 dark:border-zinc-800">
+        <div className="flex flex-shrink-0 items-start justify-between gap-3 border-b border-white/[0.07] px-5 py-4">
           <div className="min-w-0">
             <div className="mb-2 flex items-center gap-2">
               <SignalBadge signal={position.signal} />
-              <span className="font-mono text-[10px] text-zinc-400 dark:text-zinc-600">
+              <span className="font-mono text-[10px] text-white/40">
                 {position.theme}
               </span>
             </div>
             <div className="flex items-baseline gap-2">
-              <h2 className="font-mono text-base font-bold text-zinc-900 dark:text-zinc-100">
+              <h2 className="font-mono text-base font-bold text-[#f7f7f7]">
                 {position.ticker}
               </h2>
-              <span className="text-sm text-zinc-500 dark:text-zinc-400 truncate">
+              <span className="text-sm text-white/50 truncate">
                 {position.name}
               </span>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+            className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-white/40 transition-colors hover:bg-white/[0.06] hover:text-white/60"
           >
             <X size={14} />
           </button>
@@ -622,22 +613,22 @@ const DetailPanel = memo(function DetailPanel({
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
 
           {/* Position metrics */}
-          <div className="grid grid-cols-3 gap-px overflow-hidden rounded-lg border border-zinc-200 bg-zinc-200 dark:border-zinc-800 dark:bg-zinc-800">
-            <div className="bg-white px-3 py-2.5 dark:bg-zinc-900">
-              <p className="text-[10px] text-zinc-500 mb-0.5">Market value</p>
-              <p className="font-mono text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+          <div className="grid grid-cols-3 gap-px overflow-hidden rounded-lg border border-white/[0.07] bg-white/[0.07]">
+            <div className="bg-[rgb(21,18,37)] px-3 py-2.5">
+              <p className="text-[10px] text-white/40 mb-0.5">Market value</p>
+              <p className="font-mono text-sm font-semibold text-[#f7f7f7]">
                 {formatValue(position.marketValue)}
               </p>
             </div>
-            <div className="bg-white px-3 py-2.5 dark:bg-zinc-900">
-              <p className="text-[10px] text-zinc-500 mb-0.5">Weight</p>
-              <p className="font-mono text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            <div className="bg-[rgb(21,18,37)] px-3 py-2.5">
+              <p className="text-[10px] text-white/40 mb-0.5">Weight</p>
+              <p className="font-mono text-sm font-semibold text-[#f7f7f7]">
                 {position.weight.toFixed(1)}%
               </p>
             </div>
-            <div className="bg-white px-3 py-2.5 dark:bg-zinc-900">
-              <p className="text-[10px] text-zinc-500 mb-0.5">30d P&L</p>
-              <p className={`font-mono text-sm font-semibold ${pnlPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+            <div className="bg-[rgb(21,18,37)] px-3 py-2.5">
+              <p className="text-[10px] text-white/40 mb-0.5">30d P&L</p>
+              <p className={`font-mono text-sm font-semibold ${pnlPositive ? 'text-emerald-400' : 'text-rose-400'}`}>
                 {pnlPositive ? '+' : ''}{position.pnl30d.toFixed(1)}%
               </p>
             </div>
@@ -645,7 +636,7 @@ const DetailPanel = memo(function DetailPanel({
 
           {/* Risk factors */}
           <div>
-            <p className="mb-3 text-[11px] font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-600">
+            <p className="mb-3 text-[11px] font-medium uppercase tracking-wide text-white/40">
               Risk factors
             </p>
             <div className="space-y-4">
@@ -653,9 +644,9 @@ const DetailPanel = memo(function DetailPanel({
                 <div key={f.label} className="space-y-1.5">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="text-[10px] text-zinc-500 dark:text-zinc-500 mb-0.5">{f.label}</p>
+                      <p className="text-[10px] text-white/40 mb-0.5">{f.label}</p>
                       <div className="flex items-center gap-1.5">
-                        <span className="font-mono text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                        <span className="font-mono text-sm font-semibold text-[#f7f7f7]">
                           {f.value}
                         </span>
                         <DirectionIcon direction={f.direction} />
@@ -663,7 +654,7 @@ const DetailPanel = memo(function DetailPanel({
                     </div>
                     <div className="flex flex-shrink-0 flex-col items-end gap-1">
                       <FactorStatusBadge status={f.status} />
-                      <p className="font-mono text-[9px] text-zinc-400 dark:text-zinc-600">
+                      <p className="font-mono text-[9px] text-white/30">
                         threshold {f.threshold}
                       </p>
                     </div>
@@ -677,21 +668,21 @@ const DetailPanel = memo(function DetailPanel({
           {/* Linked alerts */}
           {position.linkedAlerts.length > 0 && (
             <div>
-              <p className="mb-2 text-[11px] font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-600">
+              <p className="mb-2 text-[11px] font-medium uppercase tracking-wide text-white/40">
                 Linked alerts
               </p>
               <div className="space-y-1.5">
                 {position.linkedAlerts.map((a) => (
                   <div
                     key={a.id}
-                    className="flex items-start gap-2 rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-900"
+                    className="flex items-start gap-2 rounded-md border border-white/[0.07] bg-white/[0.04] px-3 py-2.5"
                   >
                     <span className={`mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full ${SEV_DOT[a.severity]}`} />
                     <div className="min-w-0">
-                      <p className="text-xs font-medium leading-snug text-zinc-800 dark:text-zinc-200">
+                      <p className="text-xs font-medium leading-snug text-[#cecfd2]">
                         {a.title}
                       </p>
-                      <p suppressHydrationWarning className="mt-0.5 font-mono text-[10px] text-zinc-400 dark:text-zinc-600">
+                      <p suppressHydrationWarning className="mt-0.5 font-mono text-[10px] text-white/40">
                         {relativeTime(a.timestamp)}
                       </p>
                     </div>
@@ -703,11 +694,11 @@ const DetailPanel = memo(function DetailPanel({
         </div>
 
         {/* Action footer */}
-        <div className="flex flex-shrink-0 items-center gap-2 border-t border-zinc-200 px-5 py-3 dark:border-zinc-800">
+        <div className="flex flex-shrink-0 items-center gap-2 border-t border-white/[0.07] px-5 py-3">
           {position.ack === 'unread' && (
             <button
               onClick={() => onAck(position.id, 'reviewed')}
-              className="flex items-center gap-1.5 rounded-md bg-zinc-900 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-zinc-700 active:scale-[0.98] dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+              className="flex items-center gap-1.5 rounded-md bg-white/10 px-3 py-2 text-xs font-medium text-[#f7f7f7] transition-colors hover:bg-white/20 active:scale-[0.98]"
             >
               <CheckCircle size={13} />
               Mark Reviewed
@@ -724,7 +715,7 @@ const DetailPanel = memo(function DetailPanel({
               </button>
               <button
                 onClick={() => onAck(position.id, 'unread')}
-                className="flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                className="flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium text-white/40 transition-colors hover:bg-white/[0.06]"
               >
                 <ArrowCounterClockwise size={13} />
                 Undo
@@ -734,7 +725,7 @@ const DetailPanel = memo(function DetailPanel({
           {position.ack === 'acted' && (
             <button
               onClick={() => onAck(position.id, 'reviewed')}
-              className="flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+              className="flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium text-white/40 transition-colors hover:bg-white/[0.06]"
             >
               <ArrowCounterClockwise size={13} />
               Undo
@@ -744,10 +735,10 @@ const DetailPanel = memo(function DetailPanel({
           <span
             className={`inline-flex items-center gap-1 rounded px-2 py-1 font-mono text-[10px] font-semibold uppercase tracking-wide ${
               position.ack === 'acted'
-                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                ? 'bg-emerald-500/10 text-emerald-400'
                 : position.ack === 'reviewed'
-                ? 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-500'
-                : 'bg-zinc-900/10 text-zinc-700 dark:bg-zinc-100/10 dark:text-zinc-400'
+                ? 'bg-white/[0.06] text-white/40'
+                : 'bg-white/[0.06] text-white/50'
             }`}
           >
             {position.ack}
@@ -757,21 +748,6 @@ const DetailPanel = memo(function DetailPanel({
     </AnimatePresence>
   )
 })
-
-// ─── Live clock ───────────────────────────────────────────────────────────────
-
-function LiveClock() {
-  const [time, setTime] = useState(() => new Date().toUTCString().slice(17, 25))
-  useEffect(() => {
-    const id = setInterval(() => setTime(new Date().toUTCString().slice(17, 25)), 1000)
-    return () => clearInterval(id)
-  }, [])
-  return (
-    <span suppressHydrationWarning className="font-mono text-[11px] text-zinc-400 dark:text-zinc-600">
-      {time} UTC
-    </span>
-  )
-}
 
 // ─── Stat filter strip ────────────────────────────────────────────────────────
 
@@ -785,7 +761,7 @@ function StatFilter({
   onChange: (k: FilterKey) => void
 }) {
   return (
-    <div className="flex flex-shrink-0 divide-x divide-zinc-200 border-b border-zinc-200 bg-zinc-50 dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-900/50">
+    <div className="flex flex-shrink-0 divide-x divide-white/[0.07] border-b border-white/[0.07]">
       {STAT_TILES.map(({ key, label, numCls, accentCls }) => {
         const isActive = active === key
         return (
@@ -794,9 +770,7 @@ function StatFilter({
             onClick={() => onChange(key)}
             className={[
               'relative flex flex-1 flex-col items-center justify-center gap-1 py-3 transition-colors duration-100',
-              isActive
-                ? 'bg-white dark:bg-zinc-950'
-                : 'hover:bg-zinc-100/60 dark:hover:bg-white/[0.025]',
+              isActive ? 'bg-white/[0.04]' : 'hover:bg-white/[0.03]',
             ].join(' ')}
           >
             {isActive && (
@@ -806,10 +780,10 @@ function StatFilter({
                 transition={{ type: 'spring', stiffness: 400, damping: 32 }}
               />
             )}
-            <span className={`font-mono text-base font-bold tabular-nums leading-none ${isActive ? numCls : 'text-zinc-500 dark:text-zinc-500'}`}>
+            <span className={`font-mono text-base font-bold tabular-nums leading-none ${isActive ? numCls : 'text-white/40'}`}>
               {counts[key]}
             </span>
-            <span className={`text-[10px] tracking-wide ${isActive ? 'text-zinc-500 dark:text-zinc-400' : 'text-zinc-400 dark:text-zinc-600'}`}>
+            <span className={`text-[10px] tracking-wide ${isActive ? 'text-white/50' : 'text-white/30'}`}>
               {label}
             </span>
           </button>
@@ -830,7 +804,6 @@ export default function PositionsClient() {
 
   const panelOpen = selectedId !== null
 
-  // Close panel whenever analyst changes — the selected position won't belong to the new view
   useEffect(() => {
     setSelectedId(null)
     setFilter('all')
@@ -857,7 +830,6 @@ export default function PositionsClient() {
     [analystPositions]
   )
 
-  // Detect positions sharing the same linked alert (cross-position risk)
   const crossPositionWarnings = useMemo((): CrossPositionWarning[] => {
     const map = new Map<string, { alertTitle: string; tickers: string[] }>()
     for (const p of analystPositions) {
@@ -905,64 +877,50 @@ export default function PositionsClient() {
   const handleClose = useCallback(() => setSelectedId(null), [])
 
   return (
-    <div className="flex h-full flex-col bg-white dark:bg-zinc-950">
-      {/* Header */}
-      <div className="flex h-14 flex-shrink-0 items-center justify-between border-b border-zinc-200 px-5 dark:border-zinc-800">
-        <div className="flex items-center gap-3">
-          <Crosshair size={15} weight="fill" className="text-zinc-400 dark:text-zinc-500" />
-          <h1 className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
-            Positions
-          </h1>
-          {counts.kill > 0 && (
-            <span className="flex h-5 min-w-[1.25rem] items-center justify-center rounded bg-rose-500/15 px-1.5 font-mono text-[10px] font-semibold text-rose-600 dark:bg-rose-500/20 dark:text-rose-400">
-              {counts.kill} kill
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-4">
-          {/* Analyst selector */}
-          <div className="flex items-center gap-1.5 rounded-md bg-zinc-100 px-2.5 py-1 dark:bg-zinc-800">
-            <Users size={11} className="text-zinc-400 dark:text-zinc-600" />
-            <select
-              value={analystId}
-              onChange={(e) => setAnalystId(e.target.value)}
-              className="cursor-pointer bg-transparent font-mono text-[10px] text-zinc-600 outline-none dark:text-zinc-400"
-            >
-              {ANALYSTS.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <LiveClock />
-          <ThemeToggle />
-        </div>
-      </div>
+    <div
+      className="relative flex h-full flex-col overflow-hidden"
+      style={{
+        background: "linear-gradient(144deg, rgb(21,18,37) 15%, rgb(5,5,30) 82%)",
+      }}
+    >
+      {/* Radial glow overlay */}
+      <div
+        className="pointer-events-none absolute inset-0 z-0"
+        style={{
+          background:
+            "radial-gradient(ellipse 75% 55% at 45% 80%, rgba(30,58,200,0.32) 0%, transparent 68%)",
+        }}
+      />
+
+      <StellarHeader />
 
       {/* Stat filter */}
-      <StatFilter active={filter} counts={counts} onChange={setFilter} />
+      <div className="relative z-10">
+        <StatFilter active={filter} counts={counts} onChange={setFilter} />
+      </div>
 
       {/* Cross-position warnings */}
-      <CrossPositionWarnings warnings={crossPositionWarnings} />
+      <div className="relative z-10">
+        <CrossPositionWarnings warnings={crossPositionWarnings} />
+      </div>
 
       {/* Search */}
-      <div className="flex-shrink-0 border-b border-zinc-200 px-4 py-2.5 dark:border-zinc-800">
+      <div className="relative z-10 flex-shrink-0 border-b border-white/[0.07] px-4 py-2.5">
         <div className="relative">
           <MagnifyingGlass
             size={13}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-600"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40"
           />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search ticker, theme, or factor…"
-            className="w-full rounded-md border border-zinc-200 bg-zinc-50 py-2 pl-8 pr-8 text-xs text-zinc-800 placeholder-zinc-400 outline-none transition-colors focus:border-zinc-400 focus:bg-white dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:placeholder-zinc-600 dark:focus:border-zinc-600 dark:focus:bg-zinc-950"
+            className="w-full rounded-md border border-white/[0.07] bg-white/[0.06] py-2 pl-8 pr-8 text-xs text-[#f7f7f7] placeholder:text-white/30 outline-none"
           />
           {search && (
             <button
               onClick={() => setSearch('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/60"
             >
               <X size={12} />
             </button>
@@ -971,7 +929,7 @@ export default function PositionsClient() {
       </div>
 
       {/* Body */}
-      <div className="flex min-h-0 flex-1 overflow-hidden">
+      <div className="relative z-10 flex min-h-0 flex-1 overflow-hidden">
         {/* Position list */}
         <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
           <div className="flex-1 overflow-y-auto">
@@ -993,7 +951,7 @@ export default function PositionsClient() {
               )
             })}
             {filtered.length === 0 && (
-              <div className="flex flex-col items-center justify-center gap-2 py-16 text-zinc-400 dark:text-zinc-600">
+              <div className="flex flex-col items-center justify-center gap-2 py-16 text-white/40">
                 <Warning size={24} />
                 <p className="text-sm">No positions match</p>
               </div>
@@ -1003,7 +961,7 @@ export default function PositionsClient() {
 
         {/* Detail panel */}
         <div
-          className="flex-shrink-0 overflow-hidden border-l border-zinc-200 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] dark:border-zinc-800"
+          className="flex-shrink-0 overflow-hidden border-l border-white/[0.07] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
           style={{ width: panelOpen ? 420 : 0 }}
         >
           <div className="flex h-full w-[420px] flex-col">

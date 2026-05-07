@@ -1,9 +1,9 @@
 'use client'
 
-import { memo, useEffect, useState, type ReactNode } from 'react'
+import { memo, type ReactNode } from 'react'
 import { motion } from 'framer-motion'
 import { Database } from '@phosphor-icons/react'
-import ThemeToggle from '@/components/ThemeToggle'
+import StellarHeader from '@/components/StellarHeader'
 
 // ─── Health Gauge ─────────────────────────────────────────────────────────────
 
@@ -19,11 +19,10 @@ function HealthGauge({ pct }: { pct: number }) {
       <circle
         cx="21" cy="21" r={r}
         fill="none"
-        stroke="currentColor"
+        stroke="rgba(255,255,255,0.08)"
         strokeWidth="2.5"
         strokeDasharray={`${half} ${circ}`}
         strokeLinecap="round"
-        className="text-zinc-200 dark:text-zinc-800"
         style={{ transform: 'rotate(-90deg)', transformOrigin: '21px 21px' }}
       />
       <motion.circle
@@ -336,24 +335,24 @@ const THEME_COV: ThemeCov[] = [
 // ─── Style maps ───────────────────────────────────────────────────────────────
 
 const FEED_STATUS_STYLE: Record<FeedStatus, { label: string; cls: string }> = {
-  healthy:  { label: 'OK',       cls: 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10' },
-  degraded: { label: 'DEGRADED', cls: 'text-amber-600 dark:text-amber-400 bg-amber-500/10' },
-  failed:   { label: 'FAILED',   cls: 'text-rose-600 dark:text-rose-400 bg-rose-500/10' },
-  idle:     { label: 'IDLE',     cls: 'text-zinc-500 bg-zinc-100 dark:bg-zinc-800' },
+  healthy:  { label: 'OK',       cls: 'text-emerald-400 bg-emerald-500/10' },
+  degraded: { label: 'DEGRADED', cls: 'text-amber-400 bg-amber-500/10' },
+  failed:   { label: 'FAILED',   cls: 'text-rose-400 bg-rose-500/10' },
+  idle:     { label: 'IDLE',     cls: 'text-white/40 bg-white/[0.06]' },
 }
 
 const JOB_STATUS_STYLE: Record<JobStatus, { label: string; cls: string }> = {
-  running:  { label: 'RUNNING',  cls: 'text-blue-600 dark:text-blue-400 bg-blue-500/10' },
-  healthy:  { label: 'OK',       cls: 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10' },
-  degraded: { label: 'SLOW',     cls: 'text-amber-600 dark:text-amber-400 bg-amber-500/10' },
-  failed:   { label: 'FAILED',   cls: 'text-rose-600 dark:text-rose-400 bg-rose-500/10' },
-  idle:     { label: 'IDLE',     cls: 'text-zinc-500 bg-zinc-100 dark:bg-zinc-800' },
+  running:  { label: 'RUNNING',  cls: 'text-blue-400 bg-blue-500/10' },
+  healthy:  { label: 'OK',       cls: 'text-emerald-400 bg-emerald-500/10' },
+  degraded: { label: 'SLOW',     cls: 'text-amber-400 bg-amber-500/10' },
+  failed:   { label: 'FAILED',   cls: 'text-rose-400 bg-rose-500/10' },
+  idle:     { label: 'IDLE',     cls: 'text-white/40 bg-white/[0.06]' },
 }
 
 const EVENT_DOT: Record<string, string> = {
   error: 'bg-rose-500',
   warn:  'bg-amber-500',
-  info:  'bg-zinc-400 dark:bg-zinc-600',
+  info:  'bg-white/30',
 }
 
 const DOT_CFG: Record<AnyStatus, { ring: string; dot: string; ping: boolean }> = {
@@ -361,7 +360,7 @@ const DOT_CFG: Record<AnyStatus, { ring: string; dot: string; ping: boolean }> =
   running:  { ring: 'bg-blue-400',    dot: 'bg-blue-500',    ping: true },
   degraded: { ring: '',               dot: 'bg-amber-500',    ping: false },
   failed:   { ring: '',               dot: 'bg-rose-500',     ping: false },
-  idle:     { ring: '',               dot: 'bg-zinc-400 dark:bg-zinc-600', ping: false },
+  idle:     { ring: '',               dot: 'bg-white/30',     ping: false },
 }
 
 const RUN_COLOR: Record<RunResult, string> = {
@@ -394,7 +393,7 @@ function getFreshnessColor(pct: number, status: FeedStatus): string {
 
 const FreshnessBar = memo(function FreshnessBar({ pct, status }: { pct: number; status: FeedStatus }) {
   return (
-    <div className="h-1.5 w-full rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
+    <div className="h-1.5 w-full rounded-full bg-white/[0.06] overflow-hidden">
       <motion.div
         className="h-full rounded-full"
         style={{ backgroundColor: getFreshnessColor(pct, status), originX: 0 }}
@@ -416,29 +415,16 @@ function RunSparkline({ history }: { history: RunResult[] }) {
   )
 }
 
-function LiveClock() {
-  const [time, setTime] = useState(() => new Date().toUTCString().slice(17, 25))
-  useEffect(() => {
-    const id = setInterval(() => setTime(new Date().toUTCString().slice(17, 25)), 1000)
-    return () => clearInterval(id)
-  }, [])
-  return (
-    <span suppressHydrationWarning className="font-mono text-[11px] text-zinc-400 dark:text-zinc-600">
-      {time} UTC
-    </span>
-  )
-}
-
 function SectionHeader({ label, count, extra }: { label: string; count?: number; extra?: ReactNode }) {
   return (
-    <div className="sticky top-0 z-10 flex items-center justify-between gap-2 px-4 py-2 bg-zinc-50/95 dark:bg-zinc-900/95 backdrop-blur-sm border-b border-zinc-100 dark:border-zinc-800">
+    <div className="sticky top-0 z-10 flex items-center justify-between gap-2 px-4 py-2 bg-black/50 backdrop-blur-sm border-b border-white/[0.07]">
       <div className="flex items-center gap-2.5">
-        <span className="block h-3 w-px rounded-full bg-zinc-400 dark:bg-zinc-500" />
-        <span className="text-[10px] font-semibold tracking-wide text-zinc-500 dark:text-zinc-400">
+        <span className="block h-3 w-px rounded-full bg-white/40" />
+        <span className="text-[10px] font-semibold tracking-wide text-white/50">
           {label}
         </span>
         {count !== undefined && (
-          <span className="font-mono text-[10px] text-zinc-300 dark:text-zinc-700">{count}</span>
+          <span className="font-mono text-[10px] text-white/20">{count}</span>
         )}
       </div>
       {extra}
@@ -457,66 +443,52 @@ export default function PipelineClient() {
   const activeInc     = INCIDENTS.filter(i => !i.resolved).length
 
   return (
-    <div className="flex h-full flex-col bg-white dark:bg-zinc-950">
+    <div
+      className="relative flex h-full flex-col overflow-hidden"
+      style={{ background: "linear-gradient(144deg, rgb(21,18,37) 15%, rgb(5,5,30) 82%)" }}
+    >
+      {/* Glow overlay */}
+      <div
+        className="pointer-events-none absolute inset-0 z-0"
+        style={{ background: "radial-gradient(ellipse 75% 55% at 45% 80%, rgba(30,58,200,0.32) 0%, transparent 68%)" }}
+      />
 
-      {/* ── Header ── */}
-      <div className="flex h-14 flex-shrink-0 items-center justify-between border-b border-zinc-200 dark:border-zinc-800 px-5">
-        <div className="flex items-center gap-3">
-          <Database size={15} weight="fill" className="text-zinc-400 dark:text-zinc-500" />
-          <h1 className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">Pipeline health</h1>
-          <span className="flex items-center gap-1 rounded px-1.5 py-0.5 bg-emerald-500/10 dark:bg-emerald-500/15">
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60" />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
-            </span>
-            <span className="font-mono text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">LIVE</span>
-          </span>
-          {activeInc > 0 && (
-            <span className="flex h-5 min-w-[1.25rem] items-center justify-center rounded bg-rose-500/15 px-1.5 font-mono text-[10px] font-semibold text-rose-600 dark:bg-rose-500/20 dark:text-rose-400">
-              {activeInc} incident{activeInc > 1 ? 's' : ''}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-3">
-          <LiveClock />
-          <ThemeToggle />
-        </div>
-      </div>
+      <StellarHeader />
 
       {/* ── Stat strip ── */}
-      <div className="flex flex-shrink-0 divide-x divide-zinc-200 dark:divide-zinc-800 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50">
+      <div className="relative z-10 flex flex-shrink-0 divide-x divide-white/[0.07] border-b border-white/[0.07] bg-white/[0.03]">
         {/* System health */}
         <div className="flex items-center gap-3 px-5 py-3">
           <HealthGauge pct={83} />
           <div>
-            <span className="block font-mono text-xl font-bold leading-none text-zinc-900 dark:text-zinc-100">83%</span>
-            <span className="mt-1 block text-[10px] text-zinc-500">system health</span>
+            <span className="block font-mono text-xl font-bold leading-none text-[#f7f7f7]">83%</span>
+            <span className="mt-1 block text-[10px] text-white/50">system health</span>
           </div>
         </div>
         {/* Feed status */}
         <div className="flex flex-col justify-center gap-1 px-5 py-3">
-          <span className="text-[10px] text-zinc-400 dark:text-zinc-600 mb-0.5">Feeds</span>
+          <span className="text-[10px] text-white/40 mb-0.5">Feeds</span>
           <div className="flex items-center gap-3 font-mono text-[11px]">
-            <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+            <span className="flex items-center gap-1.5 text-emerald-400">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />{healthyFeeds} ok
             </span>
-            <span className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
+            <span className="flex items-center gap-1.5 text-amber-400">
               <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />{degradedFeeds} deg
             </span>
-            <span className="flex items-center gap-1.5 text-rose-600 dark:text-rose-400">
+            <span className="flex items-center gap-1.5 text-rose-400">
               <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />{failedFeeds} fail
             </span>
           </div>
         </div>
         {/* Jobs status */}
         <div className="flex flex-col justify-center gap-1 px-5 py-3">
-          <span className="text-[10px] text-zinc-400 dark:text-zinc-600 mb-0.5">Jobs</span>
+          <span className="text-[10px] text-white/40 mb-0.5">Jobs</span>
           <div className="flex items-center gap-3 font-mono text-[11px]">
-            <span className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400">
+            <span className="flex items-center gap-1.5 text-blue-400">
               <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />{activeJobs} active
             </span>
             {degradedJobs > 0 && (
-              <span className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
+              <span className="flex items-center gap-1.5 text-amber-400">
                 <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />{degradedJobs} slow
               </span>
             )}
@@ -524,28 +496,28 @@ export default function PipelineClient() {
         </div>
         {/* Throughput */}
         <div className="flex flex-col justify-center px-5 py-3">
-          <span className="text-[10px] text-zinc-400 dark:text-zinc-600 mb-1">Throughput</span>
-          <span className="font-mono text-sm font-semibold text-zinc-800 dark:text-zinc-200">4,550<span className="ml-1 text-[10px] font-normal text-zinc-400 dark:text-zinc-600">rec/h</span></span>
+          <span className="text-[10px] text-white/40 mb-1">Throughput</span>
+          <span className="font-mono text-sm font-semibold text-[#f7f7f7]">4,550<span className="ml-1 text-[10px] font-normal text-white/40">rec/h</span></span>
         </div>
         {/* Last sync */}
         <div className="flex flex-col justify-center px-5 py-3">
-          <span className="text-[10px] text-zinc-400 dark:text-zinc-600 mb-1">Last sync</span>
-          <span className="font-mono text-sm font-semibold text-zinc-800 dark:text-zinc-200">4 min<span className="ml-1 text-[10px] font-normal text-zinc-400 dark:text-zinc-600">ago</span></span>
+          <span className="text-[10px] text-white/40 mb-1">Last sync</span>
+          <span className="font-mono text-sm font-semibold text-[#f7f7f7]">4 min<span className="ml-1 text-[10px] font-normal text-white/40">ago</span></span>
         </div>
       </div>
 
       {/* ── Body ── */}
-      <div className="grid min-h-0 flex-1 grid-cols-[3fr_2fr]">
+      <div className="relative z-10 grid min-h-0 flex-1 grid-cols-[3fr_2fr]">
 
         {/* ── Left: feeds + jobs ── */}
-        <div className="overflow-y-auto border-r border-zinc-200 dark:border-zinc-800">
+        <div className="overflow-y-auto border-r border-white/[0.07]">
 
           {/* DATA FEEDS */}
           <SectionHeader
             label="Data feeds"
             count={DATA_FEEDS.length}
             extra={
-              <div className="flex items-center gap-0 font-mono text-[10px] text-zinc-400 dark:text-zinc-600">
+              <div className="flex items-center gap-0 font-mono text-[10px] text-white/40">
                 <span className="w-14 text-center">SLA</span>
                 <span className="w-36 pl-2">Freshness</span>
                 <span className="w-20 text-right">Last sync</span>
@@ -554,21 +526,21 @@ export default function PipelineClient() {
               </div>
             }
           />
-          <div className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
+          <div className="divide-y divide-white/[0.05]">
             {DATA_FEEDS.map((feed) => (
-              <div key={feed.id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-zinc-50/80 dark:hover:bg-white/[0.025] transition-colors duration-100 cursor-default">
+              <div key={feed.id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/[0.04] transition-colors duration-100 cursor-default">
                 <StatusDot status={feed.status} />
                 {/* Name + category */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-zinc-800 dark:text-zinc-200 truncate">
+                  <p className="text-xs font-medium text-[#f7f7f7] truncate">
                     {feed.name}
                   </p>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <span className="font-mono text-[9px] text-zinc-400 dark:text-zinc-600 truncate">
+                    <span className="font-mono text-[9px] text-white/40 truncate">
                       {feed.category}
                     </span>
                     {feed.errorMsg && (
-                      <span className="font-mono text-[9px] text-rose-500 dark:text-rose-400 truncate">
+                      <span className="font-mono text-[9px] text-rose-400 truncate">
                         {feed.errorMsg}
                       </span>
                     )}
@@ -576,12 +548,12 @@ export default function PipelineClient() {
                 </div>
                 {/* SLA */}
                 <div className="w-14 flex-shrink-0 text-center">
-                  <span className="font-mono text-[10px] text-zinc-400 dark:text-zinc-600">{feed.slaLabel}</span>
+                  <span className="font-mono text-[10px] text-white/40">{feed.slaLabel}</span>
                 </div>
                 {/* Freshness bar */}
                 <div className="w-36 flex-shrink-0">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="font-mono text-[9px] text-zinc-400 dark:text-zinc-600">
+                    <span className="font-mono text-[9px] text-white/40">
                       {Math.min(feed.stalenessPct, 100)}%
                     </span>
                     <span className={`font-mono text-[9px] font-semibold rounded px-1 ${FEED_STATUS_STYLE[feed.status].cls}`}>
@@ -592,24 +564,24 @@ export default function PipelineClient() {
                 </div>
                 {/* Last sync */}
                 <div className="w-20 flex-shrink-0 text-right">
-                  <span className="font-mono text-[11px] text-zinc-500 dark:text-zinc-500">
+                  <span className="font-mono text-[11px] text-white/50">
                     {feed.lastSyncLabel}
                   </span>
                 </div>
                 {/* Records */}
                 <div className="w-14 flex-shrink-0 text-right">
-                  <span className="font-mono text-[11px] text-zinc-500 dark:text-zinc-500">
+                  <span className="font-mono text-[11px] text-white/50">
                     {feed.recordsLabel}
                   </span>
                 </div>
                 {/* Error count */}
                 <div className="w-6 flex-shrink-0 text-right">
                   {feed.errorCount > 0 ? (
-                    <span className="font-mono text-[11px] font-semibold text-rose-600 dark:text-rose-400">
+                    <span className="font-mono text-[11px] font-semibold text-rose-400">
                       {feed.errorCount}
                     </span>
                   ) : (
-                    <span className="font-mono text-[11px] text-zinc-300 dark:text-zinc-700">—</span>
+                    <span className="font-mono text-[11px] text-white/20">—</span>
                   )}
                 </div>
               </div>
@@ -621,7 +593,7 @@ export default function PipelineClient() {
             label="Pipeline jobs"
             count={PIPELINE_JOBS.length}
             extra={
-              <div className="flex items-center gap-0 font-mono text-[10px] text-zinc-400 dark:text-zinc-600">
+              <div className="flex items-center gap-0 font-mono text-[10px] text-white/40">
                 <span className="w-24 text-right">Last run</span>
                 <span className="w-14 text-right">Avg</span>
                 <span className="w-24 text-right pr-2">Next</span>
@@ -629,12 +601,12 @@ export default function PipelineClient() {
               </div>
             }
           />
-          <div className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
+          <div className="divide-y divide-white/[0.05]">
             {PIPELINE_JOBS.map((job) => (
-              <div key={job.id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-zinc-50/80 dark:hover:bg-white/[0.025] transition-colors duration-100 cursor-default">
+              <div key={job.id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/[0.04] transition-colors duration-100 cursor-default">
                 <StatusDot status={job.status} />
                 <div className="flex-1 min-w-0 flex items-center gap-2">
-                  <p className="text-xs font-medium text-zinc-800 dark:text-zinc-200 truncate">
+                  <p className="text-xs font-medium text-[#f7f7f7] truncate">
                     {job.name}
                   </p>
                   <span className={`flex-shrink-0 font-mono text-[9px] font-semibold rounded px-1 ${JOB_STATUS_STYLE[job.status].cls}`}>
@@ -642,12 +614,12 @@ export default function PipelineClient() {
                   </span>
                 </div>
                 <div className="w-24 flex-shrink-0 text-right">
-                  <span className="font-mono text-[11px] text-zinc-500 dark:text-zinc-500">
+                  <span className="font-mono text-[11px] text-white/50">
                     {job.lastRunLabel}
                   </span>
                 </div>
                 <div className="w-14 flex-shrink-0 text-right">
-                  <span className="font-mono text-[11px] text-zinc-500 dark:text-zinc-500">
+                  <span className="font-mono text-[11px] text-white/50">
                     {job.avgMs >= 10000
                       ? `${(job.avgMs / 1000).toFixed(0)}s`
                       : job.avgMs >= 1000
@@ -658,10 +630,10 @@ export default function PipelineClient() {
                 <div className="w-24 flex-shrink-0 text-right pr-2">
                   <span className={`font-mono text-[11px] ${
                     job.nextRunLabel === 'delayed'
-                      ? 'text-amber-600 dark:text-amber-400 font-semibold'
+                      ? 'text-amber-400 font-semibold'
                       : job.nextRunLabel === 'continuous'
-                      ? 'text-zinc-400 dark:text-zinc-600'
-                      : 'text-zinc-500 dark:text-zinc-500'
+                      ? 'text-white/40'
+                      : 'text-white/50'
                   }`}>
                     {job.nextRunLabel}
                   </span>
@@ -679,7 +651,7 @@ export default function PipelineClient() {
 
           {/* INCIDENTS */}
           <SectionHeader label="Active incidents" count={INCIDENTS.length} />
-          <div className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
+          <div className="divide-y divide-white/[0.05]">
             {INCIDENTS.map((inc) => (
               <div
                 key={inc.id}
@@ -692,7 +664,7 @@ export default function PipelineClient() {
                 <span className={[
                   'absolute left-0 top-0 bottom-0 w-[3px] rounded-r-full',
                   inc.resolved
-                    ? 'bg-zinc-300 dark:bg-zinc-700'
+                    ? 'bg-white/20'
                     : inc.severity === 'critical'
                     ? 'bg-rose-500'
                     : 'bg-amber-500',
@@ -701,24 +673,24 @@ export default function PipelineClient() {
 
                 <div className="flex items-start justify-between gap-2 mb-1">
                   <p className={`text-xs font-medium leading-snug ${
-                    inc.resolved ? 'text-zinc-500 dark:text-zinc-500' : 'text-zinc-800 dark:text-zinc-200'
+                    inc.resolved ? 'text-white/50' : 'text-[#f7f7f7]'
                   }`}>
                     {inc.title}
                   </p>
                   <span className={`flex-shrink-0 font-mono text-[9px] font-semibold tracking-wide rounded px-1.5 py-0.5 ${
                     inc.resolved
-                      ? 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-500'
+                      ? 'bg-white/[0.06] text-white/50'
                       : inc.severity === 'critical'
-                      ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
-                      : 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
+                      ? 'bg-rose-500/20 text-rose-400'
+                      : 'bg-amber-500/20 text-amber-400'
                   }`}>
                     {inc.resolved ? 'resolved' : inc.severity}
                   </span>
                 </div>
-                <p className="text-[11px] text-zinc-500 dark:text-zinc-500 leading-snug mb-1.5">
+                <p className="text-[11px] text-white/50 leading-snug mb-1.5">
                   {inc.detail}
                 </p>
-                <p className="font-mono text-[10px] text-zinc-400 dark:text-zinc-600">{inc.timeLabel}</p>
+                <p className="font-mono text-[10px] text-white/40">{inc.timeLabel}</p>
               </div>
             ))}
           </div>
@@ -730,21 +702,21 @@ export default function PipelineClient() {
               <div key={i} className="relative flex items-start gap-3 py-[7px]">
                 {/* Timeline rail */}
                 {i < SYS_EVENTS.length - 1 && (
-                  <span className="absolute left-[13px] top-[18px] bottom-0 w-px bg-zinc-100 dark:bg-zinc-800/80" />
+                  <span className="absolute left-[13px] top-[18px] bottom-0 w-px bg-white/[0.06]" />
                 )}
                 {/* Dot */}
-                <span className={`relative flex-shrink-0 mt-[3px] h-[7px] w-[7px] rounded-full ring-2 ring-white dark:ring-zinc-950 ${EVENT_DOT[ev.level]}`} />
+                <span className={`relative flex-shrink-0 mt-[3px] h-[7px] w-[7px] rounded-full ring-2 ring-black/80 ${EVENT_DOT[ev.level]}`} />
                 {/* Content */}
                 <div className="flex-1 min-w-0 flex items-start gap-2">
-                  <span className="flex-shrink-0 w-9 font-mono text-[10px] text-zinc-400 dark:text-zinc-600 pt-px">
+                  <span className="flex-shrink-0 w-9 font-mono text-[10px] text-white/40 pt-px">
                     {ev.time}
                   </span>
                   <p className={`text-[11px] leading-snug ${
                     ev.level === 'error'
-                      ? 'text-rose-600 dark:text-rose-400'
+                      ? 'text-rose-400'
                       : ev.level === 'warn'
-                      ? 'text-amber-600 dark:text-amber-400'
-                      : 'text-zinc-600 dark:text-zinc-400'
+                      ? 'text-amber-400'
+                      : 'text-white/60'
                   }`}>
                     {ev.message}
                   </p>
@@ -759,18 +731,18 @@ export default function PipelineClient() {
             {THEME_COV.map((t) => (
               <div key={t.name}>
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[11px] text-zinc-600 dark:text-zinc-400">{t.name}</span>
+                  <span className="text-[11px] text-white/60">{t.name}</span>
                   <span className={`font-mono text-xs font-bold tabular-nums ${
                     t.pct >= 90
-                      ? 'text-emerald-600 dark:text-emerald-400'
+                      ? 'text-emerald-400'
                       : t.pct >= 80
-                      ? 'text-amber-600 dark:text-amber-400'
-                      : 'text-rose-600 dark:text-rose-400'
+                      ? 'text-amber-400'
+                      : 'text-rose-400'
                   }`}>
                     {t.pct}%
                   </span>
                 </div>
-                <div className="h-2 w-full rounded-full bg-zinc-100 dark:bg-zinc-800/80 overflow-hidden">
+                <div className="h-2 w-full rounded-full bg-white/[0.06] overflow-hidden">
                   <motion.div
                     className="h-full rounded-full"
                     style={{ backgroundColor: t.color, originX: 0 }}
@@ -781,7 +753,7 @@ export default function PipelineClient() {
                 </div>
               </div>
             ))}
-            <p className="pt-1.5 text-[10px] text-zinc-400 dark:text-zinc-600 leading-relaxed">
+            <p className="pt-1.5 text-[10px] text-white/40 leading-relaxed">
               Coverage = % of theme feeds healthy or idle. Degraded and failed feeds reduce signal fidelity.
             </p>
           </div>

@@ -1,19 +1,17 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowsLeftRight,
   X,
   MagnifyingGlass,
   Warning,
-  ArrowUp,
-  ArrowDown,
+  ArrowRight,
   CaretRight,
   Bell,
-  ArrowRight,
-} from "@phosphor-icons/react/dist/ssr";
-import ThemeToggle from "@/components/ThemeToggle";
+} from "@phosphor-icons/react";
+import StellarHeader from "@/components/StellarHeader";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -198,38 +196,38 @@ const SEV_CONFIG: Record<
 > = {
   breached: {
     label: "BREACHED",
-    bg: "bg-rose-500/15 dark:bg-rose-500/20",
-    text: "text-rose-600 dark:text-rose-400",
+    bg: "bg-rose-500/20",
+    text: "text-rose-400",
     dot: "bg-rose-500",
   },
   approaching: {
     label: "APPROACHING",
-    bg: "bg-amber-500/15 dark:bg-amber-500/20",
-    text: "text-amber-600 dark:text-amber-400",
+    bg: "bg-amber-500/20",
+    text: "text-amber-400",
     dot: "bg-amber-500",
   },
   monitor: {
     label: "MONITOR",
-    bg: "bg-blue-500/15 dark:bg-blue-500/20",
-    text: "text-blue-600 dark:text-blue-400",
+    bg: "bg-blue-500/20",
+    text: "text-blue-400",
     dot: "bg-blue-500",
   },
   clear: {
     label: "CLEAR",
-    bg: "bg-zinc-500/10 dark:bg-zinc-500/15",
-    text: "text-zinc-500 dark:text-zinc-400",
-    dot: "bg-zinc-400 dark:bg-zinc-600",
+    bg: "bg-zinc-500/15",
+    text: "text-white/40",
+    dot: "bg-zinc-500",
   },
 };
 
 const GROUP_ORDER: BottleneckSeverity[] = ["breached", "approaching", "monitor", "clear"];
 
 const STAT_TILES: { key: FilterKey; label: string; accent: string; activeAccent: string }[] = [
-  { key: "all", label: "All", accent: "text-zinc-500", activeAccent: "text-zinc-900 dark:text-zinc-100" },
-  { key: "breached", label: "Breached", accent: "text-rose-500", activeAccent: "text-rose-600 dark:text-rose-400" },
-  { key: "approaching", label: "Approaching", accent: "text-amber-500", activeAccent: "text-amber-600 dark:text-amber-400" },
-  { key: "monitor", label: "Monitor", accent: "text-blue-500", activeAccent: "text-blue-600 dark:text-blue-400" },
-  { key: "clear", label: "Clear", accent: "text-zinc-400", activeAccent: "text-zinc-500" },
+  { key: "all", label: "All", accent: "text-white/50", activeAccent: "text-[#f7f7f7]" },
+  { key: "breached", label: "Breached", accent: "text-rose-500", activeAccent: "text-rose-400" },
+  { key: "approaching", label: "Approaching", accent: "text-amber-500", activeAccent: "text-amber-400" },
+  { key: "monitor", label: "Monitor", accent: "text-blue-500", activeAccent: "text-blue-400" },
+  { key: "clear", label: "Clear", accent: "text-white/30", activeAccent: "text-white/40" },
 ];
 
 // ─── Small Components ─────────────────────────────────────────────────────────
@@ -257,9 +255,9 @@ function MismatchBar({ score }: { score: number }) {
       ? "bg-amber-500"
       : score >= 40
       ? "bg-blue-500"
-      : "bg-zinc-400 dark:bg-zinc-600";
+      : "bg-white/30";
   return (
-    <div className="h-1 w-16 rounded-full bg-zinc-100 dark:bg-zinc-800">
+    <div className="h-1 w-16 rounded-full bg-white/[0.08]">
       <div
         className={["h-full rounded-full transition-all", color].join(" ")}
         style={{ width: `${score}%` }}
@@ -287,16 +285,16 @@ function DivergenceBar({
       ? "bg-amber-500"
       : severity === "monitor"
       ? "bg-blue-500"
-      : "bg-zinc-400";
+      : "bg-white/30";
 
   return (
-    <div className="relative h-2 w-full rounded-full bg-zinc-100 dark:bg-zinc-800">
+    <div className="relative h-2 w-full rounded-full bg-white/[0.08]">
       <div
         className={["absolute left-0 top-0 h-full rounded-full transition-all", barColor].join(" ")}
         style={{ width: `${ratioW}%` }}
       />
       <div
-        className="absolute top-[-3px] h-[calc(100%+6px)] w-0.5 rounded-full bg-zinc-400 dark:bg-zinc-500"
+        className="absolute top-[-3px] h-[calc(100%+6px)] w-0.5 rounded-full bg-white/40"
         style={{ left: `${thresholdL}%` }}
         title={`Threshold: ${threshold}x`}
       />
@@ -346,7 +344,7 @@ function Sparkline({
         y1={thY}
         x2={w - pad}
         y2={thY}
-        stroke="#71717a"
+        stroke="rgba(255,255,255,0.3)"
         strokeWidth="1"
         strokeDasharray="4 3"
         opacity="0.5"
@@ -364,31 +362,6 @@ function Sparkline({
   );
 }
 
-function LiveClock() {
-  const [time, setTime] = useState("");
-  const ref = useRef<ReturnType<typeof setInterval> | null>(null);
-  useEffect(() => {
-    const tick = () =>
-      setTime(
-        new Date().toLocaleTimeString("en-US", {
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-          timeZone: "UTC",
-          hour12: false,
-        }) + " UTC"
-      );
-    tick();
-    ref.current = setInterval(tick, 1000);
-    return () => { if (ref.current) clearInterval(ref.current); };
-  }, []);
-  return (
-    <span className="font-mono text-[11px] tabular-nums text-zinc-400 dark:text-zinc-600">
-      {time}
-    </span>
-  );
-}
-
 // ─── Detail Panel ─────────────────────────────────────────────────────────────
 
 function DetailPanel({
@@ -403,54 +376,54 @@ function DetailPanel({
   return (
     <div className="flex h-full flex-col overflow-y-auto">
       {/* Header */}
-      <div className="flex items-start justify-between border-b border-zinc-200 px-5 py-4 dark:border-zinc-800">
+      <div className="flex items-start justify-between border-b border-white/[0.07] px-5 py-4">
         <div className="min-w-0 flex-1">
           <div className="mb-1.5 flex flex-wrap items-center gap-2">
             <SeverityBadge severity={pair.severity} />
-            <span className="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+            <span className="rounded bg-white/[0.06] px-1.5 py-0.5 font-mono text-[10px] text-white/50">
               {pair.theme}
             </span>
           </div>
-          <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{pair.title}</p>
-          <p className="mt-1 text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
+          <p className="text-sm font-semibold text-[#f7f7f7]">{pair.title}</p>
+          <p className="mt-1 text-xs leading-relaxed text-[#cecfd2]">
             {pair.description}
           </p>
         </div>
         <button
           onClick={onClose}
-          className="ml-3 mt-0.5 flex-shrink-0 rounded p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+          className="ml-3 mt-0.5 flex-shrink-0 rounded p-1 text-white/40 hover:bg-white/[0.06] hover:text-white/60"
         >
           <X size={14} />
         </button>
       </div>
 
       {/* Supply vs Demand cards */}
-      <div className="border-b border-zinc-200 px-5 py-4 dark:border-zinc-800">
-        <p className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-600">
+      <div className="border-b border-white/[0.07] px-5 py-4">
+        <p className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-white/40">
           Scaling Rates
         </p>
         <div className="grid grid-cols-2 gap-3">
           {(
             [
-              { side: "Supply", comp: pair.supply, color: "text-blue-600 dark:text-blue-400" },
-              { side: "Demand", comp: pair.demand, color: "text-violet-600 dark:text-violet-400" },
+              { side: "Supply", comp: pair.supply, color: "text-blue-400" },
+              { side: "Demand", comp: pair.demand, color: "text-violet-400" },
             ] as const
           ).map(({ side, comp, color }) => (
             <div
               key={side}
-              className="rounded-md border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-900"
+              className="rounded-md border border-white/[0.07] bg-white/[0.04] p-3"
             >
-              <p className="mb-0.5 text-[10px] font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-600">
+              <p className="mb-0.5 text-[10px] font-medium uppercase tracking-wider text-white/40">
                 {side}
               </p>
-              <p className="mb-1 text-[11px] text-zinc-600 dark:text-zinc-400">{comp.label}</p>
+              <p className="mb-1 text-[11px] text-white/50">{comp.label}</p>
               <p className={["font-mono text-xl font-semibold tabular-nums", color].join(" ")}>
                 {comp.currentRate.toFixed(1)}
-                <span className="ml-0.5 text-xs font-normal text-zinc-400">{comp.unit}</span>
+                <span className="ml-0.5 text-xs font-normal text-white/40">{comp.unit}</span>
               </p>
               <div className="mt-1 flex items-center gap-1">
-                <ArrowRight size={10} className="text-zinc-400" />
-                <span className="font-mono text-[10px] text-zinc-400">{comp.projectedRate.toFixed(1)} projected</span>
+                <ArrowRight size={10} className="text-white/40" />
+                <span className="font-mono text-[10px] text-white/40">{comp.projectedRate.toFixed(1)} projected</span>
               </div>
             </div>
           ))}
@@ -458,16 +431,16 @@ function DetailPanel({
       </div>
 
       {/* Divergence ratio */}
-      <div className="border-b border-zinc-200 px-5 py-4 dark:border-zinc-800">
+      <div className="border-b border-white/[0.07] px-5 py-4">
         <div className="mb-2 flex items-center justify-between">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-600">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-white/40">
             Divergence Ratio
           </p>
           <div className="flex items-center gap-2">
             <span className={["font-mono text-sm font-semibold tabular-nums", cfg.text].join(" ")}>
               {pair.divergenceRatio.toFixed(2)}x
             </span>
-            <span className="font-mono text-[10px] text-zinc-400">
+            <span className="font-mono text-[10px] text-white/40">
               / {pair.divergenceThreshold.toFixed(1)}x threshold
             </span>
           </div>
@@ -480,23 +453,23 @@ function DetailPanel({
         <div className="mt-2 flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <div className={["h-1.5 w-1.5 rounded-full", SEV_CONFIG[pair.severity].dot].join(" ")} />
-            <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <span className="text-[10px] text-white/50">
               Mismatch score: <span className="font-mono font-semibold">{pair.mismatchScore}</span>/100
             </span>
           </div>
-          <span className="text-[10px] text-zinc-400 dark:text-zinc-600">
-            Horizon: <span className="font-medium text-zinc-600 dark:text-zinc-300">{pair.bottleneckHorizon}</span>
+          <span className="text-[10px] text-white/40">
+            Horizon: <span className="font-medium text-[#cecfd2]">{pair.bottleneckHorizon}</span>
           </span>
         </div>
       </div>
 
       {/* Divergence history sparkline */}
-      <div className="border-b border-zinc-200 px-5 py-4 dark:border-zinc-800">
+      <div className="border-b border-white/[0.07] px-5 py-4">
         <div className="mb-2 flex items-center justify-between">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-600">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-white/40">
             30-Day Divergence History
           </p>
-          <span className="font-mono text-[10px] text-zinc-400">--- threshold</span>
+          <span className="font-mono text-[10px] text-white/40">--- threshold</span>
         </div>
         <div className="h-[72px] w-full">
           <Sparkline
@@ -508,26 +481,26 @@ function DetailPanel({
       </div>
 
       {/* Thesis impact */}
-      <div className="border-b border-zinc-200 px-5 py-4 dark:border-zinc-800">
-        <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-600">
+      <div className="border-b border-white/[0.07] px-5 py-4">
+        <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-white/40">
           Thesis Impact
         </p>
-        <p className="text-xs leading-relaxed text-zinc-600 dark:text-zinc-300">{pair.thesisImpact}</p>
+        <p className="text-xs leading-relaxed text-[#cecfd2]">{pair.thesisImpact}</p>
       </div>
 
       {/* Linked alert */}
       {pair.linkedAlertId && (
         <div className="px-5 py-4">
-          <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-600">
+          <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-white/40">
             Linked Alert
           </p>
-          <div className="flex items-center gap-2.5 rounded-md border border-amber-200/60 bg-amber-50/60 px-3 py-2.5 dark:border-amber-500/20 dark:bg-amber-500/10">
+          <div className="flex items-center gap-2.5 rounded-md border border-amber-500/20 bg-amber-500/10 px-3 py-2.5">
             <Bell size={13} className="flex-shrink-0 text-amber-500" />
             <div className="min-w-0 flex-1">
-              <p className="truncate text-xs font-medium text-zinc-700 dark:text-zinc-300">
+              <p className="truncate text-xs font-medium text-[#cecfd2]">
                 {pair.linkedAlertTitle}
               </p>
-              <p className="font-mono text-[10px] text-zinc-400">{pair.linkedAlertId.toUpperCase()}</p>
+              <p className="font-mono text-[10px] text-white/40">{pair.linkedAlertId.toUpperCase()}</p>
             </div>
           </div>
         </div>
@@ -580,32 +553,28 @@ export default function ScalingClient() {
   }, [filtered]);
 
   const selectedPair = PAIRS.find((p) => p.id === selectedId) ?? null;
-
   const breachedUnread = counts.breached;
 
   return (
-    <div className="flex h-full flex-col bg-white dark:bg-zinc-950">
-      {/* Header */}
-      <div className="flex h-14 flex-shrink-0 items-center justify-between border-b border-zinc-200 px-5 dark:border-zinc-800">
-        <div className="flex items-center gap-2.5">
-          <ArrowsLeftRight size={16} className="text-blue-500" weight="fill" />
-          <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-            Scaling Tracker
-          </span>
-          {breachedUnread > 0 && (
-            <span className="flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-rose-500/15 px-1 font-mono text-[10px] font-semibold text-rose-600 dark:bg-rose-500/20 dark:text-rose-400">
-              {breachedUnread}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-3">
-          <LiveClock />
-          <ThemeToggle />
-        </div>
-      </div>
+    <div
+      className="relative flex h-full flex-col overflow-hidden"
+      style={{
+        background: "linear-gradient(144deg, rgb(21,18,37) 15%, rgb(5,5,30) 82%)",
+      }}
+    >
+      {/* Radial glow overlay */}
+      <div
+        className="pointer-events-none absolute inset-0 z-0"
+        style={{
+          background:
+            "radial-gradient(ellipse 75% 55% at 45% 80%, rgba(30,58,200,0.32) 0%, transparent 68%)",
+        }}
+      />
+
+      <StellarHeader />
 
       {/* Stat tiles */}
-      <div className="flex flex-shrink-0 items-center gap-1 border-b border-zinc-200 px-4 dark:border-zinc-800">
+      <div className="relative z-10 flex flex-shrink-0 items-center gap-1 border-b border-white/[0.07] px-4">
         {STAT_TILES.map((tile) => {
           const active = filter === tile.key;
           return (
@@ -617,7 +586,7 @@ export default function ScalingClient() {
               }}
               className={[
                 "relative flex items-center gap-1.5 px-3 py-3 text-xs font-medium transition-colors",
-                active ? tile.activeAccent : "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300",
+                active ? tile.activeAccent : "text-white/40 hover:text-white/60",
               ].join(" ")}
             >
               {active && (
@@ -637,25 +606,25 @@ export default function ScalingClient() {
       </div>
 
       {/* Search */}
-      <div className="flex-shrink-0 border-b border-zinc-200 px-4 py-2.5 dark:border-zinc-800">
-        <div className="flex items-center gap-2 rounded-md border border-zinc-200 bg-zinc-50 px-3 py-1.5 dark:border-zinc-800 dark:bg-zinc-900">
-          <MagnifyingGlass size={13} className="flex-shrink-0 text-zinc-400" />
+      <div className="relative z-10 flex-shrink-0 border-b border-white/[0.07] px-4 py-2.5">
+        <div className="flex items-center gap-2 rounded-md border border-white/[0.07] bg-white/[0.06] px-3 py-1.5">
+          <MagnifyingGlass size={13} className="flex-shrink-0 text-white/40" />
           <input
             type="text"
             placeholder="Search by title, theme, or component..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="min-w-0 flex-1 bg-transparent text-xs text-zinc-700 placeholder-zinc-400 outline-none dark:text-zinc-300 dark:placeholder-zinc-600"
+            className="min-w-0 flex-1 bg-transparent text-xs text-[#f7f7f7] placeholder:text-white/30 outline-none"
           />
         </div>
       </div>
 
       {/* Body */}
-      <div className="flex min-h-0 flex-1 overflow-hidden">
+      <div className="relative z-10 flex min-h-0 flex-1 overflow-hidden">
         {/* List */}
         <div className="flex flex-1 flex-col overflow-y-auto">
           {filtered.length === 0 ? (
-            <div className="flex flex-1 flex-col items-center justify-center gap-2 text-zinc-400">
+            <div className="flex flex-1 flex-col items-center justify-center gap-2 text-white/40">
               <ArrowsLeftRight size={24} />
               <p className="text-sm">No bottleneck pairs match</p>
             </div>
@@ -665,12 +634,12 @@ export default function ScalingClient() {
                 const cfg = SEV_CONFIG[sev];
                 return (
                   <div key={sev}>
-                    <div className="flex items-center gap-2 border-b border-zinc-100 bg-zinc-50/60 px-4 py-1.5 dark:border-zinc-800/60 dark:bg-zinc-900/40">
+                    <div className="flex items-center gap-2 border-b border-white/[0.05] bg-white/[0.03] px-4 py-1.5">
                       <div className={["h-1.5 w-1.5 rounded-full", cfg.dot].join(" ")} />
                       <span className={["text-[10px] font-semibold uppercase tracking-wider", cfg.text].join(" ")}>
                         {cfg.label}
                       </span>
-                      <span className="font-mono text-[10px] text-zinc-400">{items.length}</span>
+                      <span className="font-mono text-[10px] text-white/40">{items.length}</span>
                     </div>
                     {items.map((pair) => {
                       const active = selectedId === pair.id;
@@ -679,20 +648,18 @@ export default function ScalingClient() {
                           key={pair.id}
                           onClick={() => setSelectedId(active ? null : pair.id)}
                           className={[
-                            "w-full border-b border-zinc-100 px-4 py-3 text-left transition-colors dark:border-zinc-800/60",
+                            "w-full border-b border-white/[0.05] px-4 py-3 text-left transition-colors",
                             active
-                              ? "bg-zinc-50 dark:bg-zinc-900/60"
-                              : "hover:bg-zinc-50/70 dark:hover:bg-zinc-900/30",
+                              ? "bg-white/[0.05]"
+                              : "hover:bg-white/[0.03]",
                           ].join(" ")}
                         >
                           <div className="flex items-start gap-3">
-                            {/* Severity dot */}
                             <div className={["mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full", cfg.dot].join(" ")} />
 
-                            {/* Content */}
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-2">
-                                <p className="truncate text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                                <p className="truncate text-sm font-medium text-[#f7f7f7]">
                                   {pair.title}
                                 </p>
                                 {pair.linkedAlertId && (
@@ -700,21 +667,20 @@ export default function ScalingClient() {
                                 )}
                               </div>
                               <div className="mt-0.5 flex items-center gap-2">
-                                <span className="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+                                <span className="rounded bg-white/[0.06] px-1.5 py-0.5 font-mono text-[10px] text-white/50">
                                   {pair.theme}
                                 </span>
-                                <span className="text-[10px] text-zinc-400">
+                                <span className="text-[10px] text-white/40">
                                   {pair.supply.label}
                                   <ArrowRight
                                     size={9}
-                                    className="mx-0.5 inline-block text-zinc-300 dark:text-zinc-600"
+                                    className="mx-0.5 inline-block text-white/20"
                                   />
                                   {pair.demand.label}
                                 </span>
                               </div>
                             </div>
 
-                            {/* Right */}
                             <div className="flex flex-shrink-0 flex-col items-end gap-1.5">
                               <span className={["font-mono text-sm font-semibold tabular-nums", cfg.text].join(" ")}>
                                 {pair.divergenceRatio.toFixed(2)}x
@@ -726,7 +692,7 @@ export default function ScalingClient() {
                               size={12}
                               className={[
                                 "mt-1 flex-shrink-0 transition-transform",
-                                active ? "rotate-90 text-blue-500" : "text-zinc-300 dark:text-zinc-700",
+                                active ? "rotate-90 text-blue-500" : "text-white/20",
                               ].join(" ")}
                             />
                           </div>
@@ -749,7 +715,7 @@ export default function ScalingClient() {
               animate={{ width: 420, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
               transition={{ type: "spring", stiffness: 380, damping: 38 }}
-              className="flex-shrink-0 overflow-hidden border-l border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950"
+              className="flex-shrink-0 overflow-hidden border-l border-white/[0.07] bg-transparent"
             >
               <motion.div
                 initial={{ x: 12, opacity: 0 }}
