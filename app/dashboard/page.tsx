@@ -22,8 +22,8 @@ const DASHBOARDS = [
   {
     id: "investment-process",
     name: "Investment Process",
-    description: "End-to-end pipeline from research to execution.",
-    date: "Apr 22, 2026",
+    description: "Risk grid, DV01 exposure, concentration limits, and breach tracking.",
+    date: "May 07, 2026",
     href: "/dashboard/investment-process",
   },
 ];
