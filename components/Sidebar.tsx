@@ -1,17 +1,23 @@
 import {
-  ChartPieSlice,
+  Crosshair,
+  SunHorizon,
   Bell,
   ChartLineUp,
   Database,
   Gear,
   User,
+  House,
 } from "@phosphor-icons/react/dist/ssr";
 
-const navItems = [
-  { label: "Overview", icon: ChartPieSlice, href: "/" },
+const PRIMARY_NAV = [
+  { label: "Morning Brief", icon: SunHorizon, href: "/dashboard/st-flux" },
+  { label: "Positions", icon: Crosshair, href: "/positions", badge: 2 },
   { label: "Alerts", icon: Bell, href: "/alerts", badge: 3 },
+];
+
+const TOOLS_NAV = [
   { label: "Theme View", icon: ChartLineUp, href: "/themes" },
-  { label: "Pipeline Health", icon: Database, href: "/pipeline" },
+  { label: "Pipeline", icon: Database, href: "/pipeline" },
 ];
 
 export default function Sidebar({ activePath = "/" }: { activePath?: string }) {
@@ -25,40 +31,83 @@ export default function Sidebar({ activePath = "/" }: { activePath?: string }) {
         </span>
       </div>
 
-      {/* Nav */}
-      <nav className="flex flex-1 flex-col gap-0.5 p-3">
-        {navItems.map(({ label, icon: Icon, href, badge }) => {
+      {/* Home link */}
+      <div className="px-3 pt-3">
+        <a
+          href="/"
+          className="group flex items-center gap-3 rounded-md px-3 py-2 text-xs font-medium text-zinc-400 hover:bg-zinc-50 hover:text-zinc-600 transition-colors duration-150 dark:hover:bg-zinc-900 dark:hover:text-zinc-300"
+        >
+          <House size={14} className="text-zinc-300 group-hover:text-zinc-500 dark:text-zinc-700 dark:group-hover:text-zinc-500" />
+          <span>Cockpit</span>
+        </a>
+      </div>
+
+      {/* Primary nav */}
+      <nav className="flex flex-col gap-0.5 p-3">
+        {PRIMARY_NAV.map(({ label, icon: Icon, href, badge }) => {
           const active = href === activePath;
           return (
-          <a
-            key={href}
-            href={href}
-            className={[
-              "group flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors duration-150",
-              active
-                ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100"
-                : "text-zinc-500 hover:bg-zinc-50 hover:text-zinc-700 dark:hover:bg-zinc-900 dark:hover:text-zinc-300",
-            ].join(" ")}
-          >
-            <Icon
-              size={16}
-              weight={active ? "fill" : "regular"}
-              className={
+            <a
+              key={href}
+              href={href}
+              className={[
+                "group flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors duration-150",
                 active
-                  ? "text-blue-500"
-                  : "text-zinc-400 group-hover:text-zinc-600 dark:text-zinc-600 dark:group-hover:text-zinc-400"
-              }
-            />
-            <span className="flex-1">{label}</span>
-            {badge !== undefined && (
-              <span className="flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-rose-500/15 px-1 font-mono text-[10px] font-semibold text-rose-600 dark:bg-rose-500/20 dark:text-rose-400">
-                {badge}
-              </span>
-            )}
-          </a>
+                  ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100"
+                  : "text-zinc-500 hover:bg-zinc-50 hover:text-zinc-700 dark:hover:bg-zinc-900 dark:hover:text-zinc-300",
+              ].join(" ")}
+            >
+              <Icon
+                size={16}
+                weight={active ? "fill" : "regular"}
+                className={
+                  active
+                    ? "text-blue-500"
+                    : "text-zinc-400 group-hover:text-zinc-600 dark:text-zinc-600 dark:group-hover:text-zinc-400"
+                }
+              />
+              <span className="flex-1">{label}</span>
+              {badge !== undefined && (
+                <span className="flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-rose-500/15 px-1 font-mono text-[10px] font-semibold text-rose-600 dark:bg-rose-500/20 dark:text-rose-400">
+                  {badge}
+                </span>
+              )}
+            </a>
           );
         })}
       </nav>
+
+      {/* Tools section */}
+      <div className="mx-3 border-t border-zinc-100 pt-3 dark:border-zinc-800/60">
+        {TOOLS_NAV.map(({ label, icon: Icon, href }) => {
+          const active = href === activePath;
+          return (
+            <a
+              key={href}
+              href={href}
+              className={[
+                "group flex items-center gap-3 rounded-md px-3 py-2 text-xs font-medium transition-colors duration-150",
+                active
+                  ? "text-zinc-600 dark:text-zinc-300"
+                  : "text-zinc-400 hover:text-zinc-600 dark:text-zinc-600 dark:hover:text-zinc-400",
+              ].join(" ")}
+            >
+              <Icon
+                size={14}
+                className={
+                  active
+                    ? "text-zinc-500 dark:text-zinc-400"
+                    : "text-zinc-300 group-hover:text-zinc-500 dark:text-zinc-700 dark:group-hover:text-zinc-500"
+                }
+              />
+              <span className="flex-1">{label}</span>
+            </a>
+          );
+        })}
+      </div>
+
+      {/* Spacer */}
+      <div className="flex-1" />
 
       {/* Footer */}
       <div className="border-t border-zinc-200 p-3 dark:border-zinc-800">

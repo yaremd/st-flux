@@ -1,0 +1,23 @@
+project_type: existing
+mode: guided
+goal: review
+detected_environment:
+  git: true
+  claude_md: true
+  source_code: true
+  typescript: true
+  shipped_ui: true
+  component_count: 18
+  plugins:
+    - Context7
+    - Figma
+    - Playwright
+  mcps_missing:
+    - Figma Console
+project:
+  context:
+    existing_design_system: false
+    existing_brand_docs: false
+    existing_specs: false
+    shipped_ui: true
+    off_repo_references: []
