@@ -7,6 +7,7 @@ import {
   Gear,
   User,
   House,
+  BezierCurve,
 } from "@phosphor-icons/react/dist/ssr";
 
 const PRIMARY_NAV = [
@@ -18,6 +19,7 @@ const PRIMARY_NAV = [
 const TOOLS_NAV = [
   { label: "Theme View", icon: ChartLineUp, href: "/themes" },
   { label: "Pipeline", icon: Database, href: "/pipeline" },
+  { label: "Curves", icon: BezierCurve, href: "/curves" },
 ];
 
 export default function Sidebar({ activePath = "/" }: { activePath?: string }) {

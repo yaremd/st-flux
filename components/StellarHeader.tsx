@@ -19,6 +19,7 @@ const ROUTE_TITLES: Record<string, string> = {
   "/positions": "Positions",
   "/scaling": "Scaling",
   "/themes": "Themes",
+  "/curves": "Curves",
 };
 
 function LogoDefault() {

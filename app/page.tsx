@@ -132,7 +132,7 @@ function DataAnalysisCard() {
 function CurvesCard() {
   return (
     <GlareCard
-      href="/scaling"
+      href="/curves"
       className="group relative overflow-hidden rounded-[48px] bg-white/[0.10] backdrop-blur-xl ring-1 ring-white/[0.15] transition-all duration-300 hover:bg-white/[0.14] hover:ring-white/[0.22] block"
     >
       <div className="absolute left-6 top-6 flex flex-col gap-2 z-10">
